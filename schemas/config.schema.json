@@ -1,0 +1,222 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"type": "object",
+	"properties": {
+		"codeMarkPlus.enable": {
+			"type": "boolean",
+			"default": true,
+			"scope": "resource",
+			"description": "Enable or disable the extension."
+		},
+		"codeMarkPlus.defaultLanguage": {
+			"type": "string",
+			"default": "javascript",
+			"enum": [
+				"javascript",
+				"typescript",
+				"java",
+				"csharp",
+				"php",
+				"dart",
+				"python",
+				"cpp",
+				"ruby",
+				"go"
+			],
+			"enumDescriptions": [
+				"JavaScript",
+				"TypeScript",
+				"Java",
+				"C#",
+				"PHP",
+				"Dart",
+				"Python",
+				"C++",
+				"Ruby",
+				"Go"
+			],
+			"scope": "resource",
+			"description": "Default language to be used for comments."
+		},
+		"codeMarkPlus.isCommentMessageWrapped": {
+			"type": "boolean",
+			"default": false,
+			"scope": "resource",
+			"description": "Determine whether to wrap the comment message with additional formatting or markers."
+		},
+		"codeMarkPlus.commentDelimiter": {
+			"type": "string",
+			"default": "~",
+			"scope": "resource",
+			"description": "Delimiter to separate different elements inside the comment message (e.g., file name, function)."
+		},
+		"codeMarkPlus.commentMessagePrefix": {
+			"type": "string",
+			"default": "🔹",
+			"scope": "resource",
+			"description": "Prefix added at the beginning of the comment message."
+		},
+		"codeMarkPlus.commentMessageSuffix": {
+			"type": "string",
+			"default": ":",
+			"scope": "resource",
+			"description": "Suffix added at the end of the comment message."
+		},
+		"codeMarkPlus.addEmptyLineBeforeComment": {
+			"type": "boolean",
+			"default": false,
+			"scope": "resource",
+			"description": "Insert an empty line before the comment message for improved readability."
+		},
+		"codeMarkPlus.addEmptyLineAfterComment": {
+			"type": "boolean",
+			"default": false,
+			"scope": "resource",
+			"description": "Insert an empty line after the comment message for improved readability."
+		},
+		"codeMarkPlus.literalOpen": {
+			"type": "string",
+			"default": "{",
+			"scope": "resource",
+			"description": "The opening character used to delimit string literals (e.g., double quotes, single quotes, backticks)."
+		},
+		"codeMarkPlus.literalClose": {
+			"type": "string",
+			"default": "}",
+			"scope": "resource",
+			"description": "The closing character used to delimit string literals (e.g., double quotes, single quotes, backticks)."
+		},
+		"codeMarkPlus.useCurrentPosition": {
+			"type": "boolean",
+			"default": false,
+			"scope": "resource",
+			"description": "Use the current cursor position to insert the comment."
+		},
+		"codeMarkPlus.author": {
+			"type": "string",
+			"default": "John Doe",
+			"scope": "resource",
+			"description": "The author's name for the comment."
+		},
+		"codeMarkPlus.version": {
+			"type": "string",
+			"default": "1.0.0",
+			"scope": "resource",
+			"description": "The extension's version."
+		},
+		"codeMarkPlus.license": {
+			"type": "string",
+			"default": "MIT",
+			"scope": "resource",
+			"description": "The extension's license."
+		},
+		"codeMarkPlus.highlightActive": {
+			"type": "boolean",
+			"default": true,
+			"scope": "resource",
+			"description": "Enable dynamic highlighting while the editor is active."
+		},
+		"codeMarkPlus.highlightRules": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"properties": {
+					"keyword": {
+						"type": "string",
+						"description": "The keyword to highlight."
+					},
+					"color": {
+						"type": "string",
+						"description": "The"
+					},
+					"bold": {
+						"type": "boolean",
+						"description": "The text style for bold keywords."
+					},
+					"italic": {
+						"type": "boolean",
+						"description": "The text style for italic keywords."
+					},
+					"underline": {
+						"type": "boolean",
+						"description": "The text style for underlined keywords."
+					}
+				},
+				"required": ["keyword", "color"]
+			},
+			"default": [
+				{
+					"keyword": "TODO",
+					"color": "rgba(255,204,0,0.3)",
+					"bold": true
+				},
+				{
+					"keyword": "FIXME",
+					"color": "rgba(255,0,0,0.3)",
+					"bold": true,
+					"underline": true
+				},
+				{
+					"keyword": "NOTE",
+					"color": "rgba(0,255,0,0.3)",
+					"italic": true
+				}
+			],
+			"scope": "resource",
+			"description": "List of highlight rules for keywords. Each rule must define a keyword, a background color, and optionally text styles."
+		},
+		"codeMarkPlus.specialHighlightDecoration": {
+			"type": "object",
+			"default": {
+				"backgroundColor": "rgba(0,128,255,0.3)",
+				"border": "1px solid blue",
+				"isWholeLine": true
+			},
+			"description": "Configuration for the decoration applied to special highlight directives (e.g., 'HIGHLIGHT: next line')."
+		},
+		"codeMarkPlus.customTemplates": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"properties": {
+					"language": {
+						"type": "string",
+						"enum": [
+							"javascript",
+							"typescript",
+							"java",
+							"csharp",
+							"php",
+							"dart",
+							"python",
+							"cpp",
+							"ruby",
+							"go"
+						],
+						"enumDescriptions": [
+							"JavaScript",
+							"TypeScript",
+							"Java",
+							"C#",
+							"PHP",
+							"Dart",
+							"Python",
+							"C++",
+							"Ruby",
+							"Go"
+						],
+						"description": "The programming language for which this template applies (e.g., 'javascript', 'python', 'dart')."
+					},
+					"template": {
+						"type": "array",
+						"description": "The comment message template. Use variables like {{{commentMessagePrefix}}}, {{{commentMessageSuffix}}, etc. Example: \"// {{{commentMessagePrefix}}} {{{fileName}}} {{{commentMessageSuffix}}\""
+					}
+				},
+				"required": ["language", "template"]
+			},
+			"default": [],
+			"scope": "resource",
+			"description": "Custom comment message templates for different languages. You can define a template per language using available variables (e.g., {{{commentMessagePrefix}}}, {{{commentMessageSuffix}}, {{{fileName}}, {{{author}})."
+		}
+	}
+}

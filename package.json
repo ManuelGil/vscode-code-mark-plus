@@ -1,0 +1,375 @@
+{
+	"name": "vscode-code-mark-plus",
+	"displayName": "CodeMark+",
+	"description": "CodeMark+ is a Visual Studio Code extension that helps you insert, remove, and highlight custom comments in your code.",
+	"version": "1.0.0",
+	"icon": "icon.png",
+	"license": "MIT",
+	"publisher": "imgildev",
+	"author": "ManuelGil",
+	"sponsor": {
+		"url": "https://github.com/sponsors/ManuelGil"
+	},
+	"engines": {
+		"vscode": "^1.88.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"keywords": [
+		"add comments",
+		"C#",
+		"C++",
+		"code annotations",
+		"code comments",
+		"code productivity",
+		"comment insertion",
+		"comment removal",
+		"comment template",
+		"comment",
+		"comments",
+		"custom comments",
+		"customizable comments",
+		"Dart",
+		"debugging",
+		"documentation",
+		"dynamic highlighting",
+		"Go",
+		"highlight comment",
+		"highlight comments",
+		"highlight keywords",
+		"insert comment",
+		"insert comments",
+		"Java",
+		"JavaScript",
+		"PHP",
+		"Python",
+		"remove comment",
+		"remove comments",
+		"Ruby",
+		"TypeScript",
+		"vscode extension",
+		"vscode"
+	],
+	"homepage": "https://github.com/ManuelGil/vscode-code-mark-plus",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/ManuelGil/vscode-code-mark-plus.git"
+	},
+	"bugs": {
+		"url": "https://github.com/ManuelGil/vscode-code-mark-plus/issues"
+	},
+	"activationEvents": [
+		"onStartupFinished"
+	],
+	"main": "./out/extension.js",
+	"l10n": "./l10n",
+	"contributes": {
+		"configuration": {
+			"type": "object",
+			"title": "CodeMark+ Configuration",
+			"properties": {
+				"codeMarkPlus.enable": {
+					"type": "boolean",
+					"default": true,
+					"scope": "resource",
+					"description": "%codeMarkPlus.enable.description%"
+				},
+				"codeMarkPlus.defaultLanguage": {
+					"type": "string",
+					"default": "javascript",
+					"enum": [
+						"javascript",
+						"typescript",
+						"java",
+						"csharp",
+						"php",
+						"dart",
+						"python",
+						"cpp",
+						"ruby",
+						"go"
+					],
+					"enumDescriptions": [
+						"JavaScript",
+						"TypeScript",
+						"Java",
+						"C#",
+						"PHP",
+						"Dart",
+						"Python",
+						"C++",
+						"Ruby",
+						"Go"
+					],
+					"scope": "resource",
+					"description": "%codeMarkPlus.defaultLanguage.description%"
+				},
+				"codeMarkPlus.isCommentMessageWrapped": {
+					"type": "boolean",
+					"default": false,
+					"scope": "resource",
+					"description": "%codeMarkPlus.isCommentMessageWrapped.description%"
+				},
+				"codeMarkPlus.commentDelimiter": {
+					"type": "string",
+					"default": "~",
+					"scope": "resource",
+					"description": "%codeMarkPlus.commentDelimiter.description%"
+				},
+				"codeMarkPlus.commentMessagePrefix": {
+					"type": "string",
+					"default": "🔹",
+					"scope": "resource",
+					"description": "%codeMarkPlus.commentMessagePrefix.description%"
+				},
+				"codeMarkPlus.commentMessageSuffix": {
+					"type": "string",
+					"default": ":",
+					"scope": "resource",
+					"description": "%codeMarkPlus.commentMessageSuffix.description%"
+				},
+				"codeMarkPlus.addEmptyLineBeforeComment": {
+					"type": "boolean",
+					"default": false,
+					"scope": "resource",
+					"description": "%codeMarkPlus.addEmptyLineBeforeComment.description%"
+				},
+				"codeMarkPlus.addEmptyLineAfterComment": {
+					"type": "boolean",
+					"default": false,
+					"scope": "resource",
+					"description": "%codeMarkPlus.addEmptyLineAfterComment.description%"
+				},
+				"codeMarkPlus.literalOpen": {
+					"type": "string",
+					"default": "{",
+					"scope": "resource",
+					"description": "%codeMarkPlus.literalOpen.description%"
+				},
+				"codeMarkPlus.literalClose": {
+					"type": "string",
+					"default": "}",
+					"scope": "resource",
+					"description": "%codeMarkPlus.literalClose.description%"
+				},
+				"codeMarkPlus.useCurrentPosition": {
+					"type": "boolean",
+					"default": false,
+					"scope": "resource",
+					"description": "%codeMarkPlus.useCurrentPosition.description%"
+				},
+				"codeMarkPlus.author": {
+					"type": "string",
+					"default": "Unknown",
+					"scope": "resource",
+					"description": "%codeMarkPlus.author.description%"
+				},
+				"codeMarkPlus.version": {
+					"type": "string",
+					"default": "1.0.0",
+					"scope": "resource",
+					"description": "%codeMarkPlus.version.description%"
+				},
+				"codeMarkPlus.license": {
+					"type": "string",
+					"default": "MIT",
+					"scope": "resource",
+					"description": "%codeMarkPlus.license.description%"
+				},
+				"codeMarkPlus.highlightActive": {
+					"type": "boolean",
+					"default": true,
+					"scope": "resource",
+					"description": "%codeMarkPlus.highlightActive.description%"
+				},
+				"codeMarkPlus.highlightRules": {
+					"type": "array",
+					"items": {
+						"type": "object",
+						"properties": {
+							"keyword": {
+								"type": "string",
+								"description": "%codeMarkPlus.highlightRules.keyword.description%"
+							},
+							"color": {
+								"type": "string",
+								"description": "%codeMarkPlus.highlightRules.color.description%"
+							},
+							"bold": {
+								"type": "boolean",
+								"description": "%codeMarkPlus.highlightRules.bold.description%"
+							},
+							"italic": {
+								"type": "boolean",
+								"description": "%codeMarkPlus.highlightRules.italic.description%"
+							},
+							"underline": {
+								"type": "boolean",
+								"description": "%codeMarkPlus.highlightRules.underline.description%"
+							}
+						},
+						"required": [
+							"keyword",
+							"color"
+						]
+					},
+					"default": [
+						{
+							"keyword": "TODO",
+							"color": "rgba(255,204,0,0.3)",
+							"bold": true
+						},
+						{
+							"keyword": "FIXME",
+							"color": "rgba(255,0,0,0.3)",
+							"bold": true,
+							"underline": true
+						},
+						{
+							"keyword": "NOTE",
+							"color": "rgba(0,255,0,0.3)",
+							"italic": true
+						}
+					],
+					"scope": "resource",
+					"description": "%codeMarkPlus.highlightRules.description%"
+				},
+				"codeMarkPlus.specialHighlightDecoration": {
+					"type": "object",
+					"default": {
+						"backgroundColor": "rgba(0,128,255,0.3)",
+						"border": "1px solid blue",
+						"isWholeLine": true
+					},
+					"description": "%codeMarkPlus.specialHighlightDecoration.description%"
+				},
+				"codeMarkPlus.customTemplates": {
+					"type": "array",
+					"items": {
+						"type": "object",
+						"properties": {
+							"language": {
+								"type": "string",
+								"enum": [
+									"javascript",
+									"typescript",
+									"java",
+									"csharp",
+									"php",
+									"dart",
+									"python",
+									"cpp",
+									"ruby",
+									"go"
+								],
+								"enumDescriptions": [
+									"JavaScript",
+									"TypeScript",
+									"Java",
+									"C#",
+									"PHP",
+									"Dart",
+									"Python",
+									"C++",
+									"Ruby",
+									"Go"
+								],
+								"description": "%codeMarkPlus.customTemplates.language.description%"
+							},
+							"template": {
+								"type": "array",
+								"description": "%codeMarkPlus.customTemplates.template.description%"
+							}
+						},
+						"required": [
+							"language",
+							"template"
+						]
+					},
+					"default": [],
+					"scope": "resource",
+					"description": "%codeMarkPlus.customTemplates.description%"
+				}
+			}
+		},
+		"commands": [
+			{
+				"command": "codeMarkPlus.insertComment",
+				"title": "%codeMarkPlus.insertComment.title%",
+				"category": "codeMark+"
+			},
+			{
+				"command": "codeMarkPlus.removeSingleLineComments",
+				"title": "%codeMarkPlus.removeSingleLineComments.title%",
+				"category": "codeMark+"
+			}
+		],
+		"keybindings": [
+			{
+				"key": "ctrl+alt+u",
+				"command": "codeMarkPlus.insertComment",
+				"when": "editorTextFocus",
+				"description": "Insert comment for selected function or variable (Windows & Linux)"
+			},
+			{
+				"key": "cmd+alt+u",
+				"command": "codeMarkPlus.insertComment",
+				"when": "editorTextFocus",
+				"description": "Insert comment for selected function or variable (macOS)"
+			},
+			{
+				"key": "ctrl+alt+shift+u",
+				"command": "codeMarkPlus.removeSingleLineComments",
+				"when": "editorTextFocus",
+				"description": "Remove all inserted comments (Windows & Linux)"
+			},
+			{
+				"key": "cmd+alt+shift+u",
+				"command": "codeMarkPlus.removeSingleLineComments",
+				"when": "editorTextFocus",
+				"description": "Remove all inserted comments (macOS)"
+			}
+		],
+		"jsonValidation": [
+			{
+				"fileMatch": ".vscode/settings.json",
+				"url": "./schemas/config.schema.json"
+			}
+		]
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "rimraf out && tsc -p ./",
+		"watch": "tsc -watch -p ./",
+		"pretest": "npm run compile && npm run lint",
+		"format": "biome format --write",
+		"lint": "biome lint --write",
+		"lint:check": "biome check --write",
+		"test": "node ./out/test/runTest.js",
+		"compodoc": "npx compodoc -p tsconfig.doc.json -d compodoc --theme readthedocs -s",
+		"prepare": "husky"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "1.9.4",
+		"@commitlint/cli": "^19.6.0",
+		"@commitlint/config-conventional": "^19.6.0",
+		"@compodoc/compodoc": "^1.1.26",
+		"@types/mocha": "^10.0.10",
+		"@types/mustache": "^4.2.5",
+		"@types/node": "^22.10.0",
+		"@types/vscode": "^1.88.0",
+		"@vscode/l10n-dev": "^0.0.35",
+		"@vscode/test-cli": "^0.0.10",
+		"@vscode/test-electron": "^2.4.1",
+		"husky": "^9.1.7",
+		"lint-staged": "^15.2.10",
+		"mocha": "^10.8.2",
+		"rimraf": "^6.0.1",
+		"typescript": "^5.7.2",
+		"vscode-test": "^1.6.1"
+	},
+	"dependencies": {
+		"mustache": "^4.2.0"
+	}
+}
