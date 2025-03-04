@@ -7,11 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1] - 2025-03-04
+
+### Fixed
+
+- Fix issue with `useCurrentPosition` setting to insert new comment at cursor position
+- Fix typos in the `extension.config.ts` file and `constants.config.ts` file
+
 ## [1.0.0] - 2025-03-03
 
 ### Added
 
 - Initial release of codeMark+ extension
 
-[Unreleased]: https://github.com/ManuelGil/vscode-code-mark-plus/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/ManuelGil/vscode-code-mark-plus/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/ManuelGil/vscode-code-mark-plus/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/ManuelGil/vscode-code-mark-plus/releases/tag/v1.0.0

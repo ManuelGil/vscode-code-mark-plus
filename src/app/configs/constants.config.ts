@@ -34,7 +34,7 @@ export const EXTENSION_NAME: string = 'vscode-code-mark-plus';
  *
  * @returns {string} - The name of the extension
  */
-export const EXTENSION_DISPLAY_NAME: string = 'codeMark+';
+export const EXTENSION_DISPLAY_NAME: string = 'CodeMark+';
 
 /**
  * USER_PUBLISHER: The publisher of the extension.
@@ -73,76 +73,76 @@ export const DEFAULT_ENABLE_SETTING: boolean = true;
 export const DEFAULT_LANGUAGE_SETTING: string = 'javascript';
 
 /**
- * DEFAULT_LOG_MESSAGE_WRAPPED_SETTING: The default value for the comment wrapped setting.
+ * DEFAULT_COMMENT_MESSAGE_WRAPPED_SETTING: The default value for the comment wrapped setting.
  * @type {boolean}
  * @public
  * @memberof Constants
  * @example
- * console.log(DEFAULT_LOG_MESSAGE_WRAPPED_SETTING);
+ * console.log(DEFAULT_COMMENT_MESSAGE_WRAPPED_SETTING);
  *
  * @returns {boolean} - The default value for the comment wrapped setting
  */
-export const DEFAULT_LOG_MESSAGE_WRAPPED_SETTING: boolean = false;
+export const DEFAULT_COMMENT_MESSAGE_WRAPPED_SETTING: boolean = false;
 
 /**
- * DEFAULT_LOG_MESSAGE_PREFIX: The default value for the comment prefix.
+ * DEFAULT_COMMENT_MESSAGE_PREFIX: The default value for the comment prefix.
  * @type {string}
  * @public
  * @memberof Constants
  * @example
- * console.log(DEFAULT_LOG_MESSAGE_PREFIX);
+ * console.log(DEFAULT_COMMENT_MESSAGE_PREFIX);
  *
  * @returns {string} - The default value for the comment prefix
  */
-export const DEFAULT_LOG_MESSAGE_PREFIX: string = '🔹';
+export const DEFAULT_COMMENT_MESSAGE_PREFIX: string = '🔹';
 
 /**
- * DEFAULT_MESSAGE_LOG_DELIMITER: The default value for the message log delimiter.
+ * DEFAULT_MESSAGE_COMMENT_DELIMITER: The default value for the message comment delimiter.
  * @type {string}
  * @public
  * @memberof Constants
  * @example
- * console.log(DEFAULT_MESSAGE_LOG_DELIMITER);
+ * console.log(DEFAULT_MESSAGE_COMMENT_DELIMITER);
  *
- * @returns {string} - The default value for the message log delimiter
+ * @returns {string} - The default value for the message comment delimiter
  */
-export const DEFAULT_MESSAGE_LOG_DELIMITER: string = '~';
+export const DEFAULT_MESSAGE_COMMENT_DELIMITER: string = '~';
 
 /**
- * DEFAULT_MESSAGE_LOG_SUFFIX: The default value for the message log suffix.
+ * DEFAULT_MESSAGE_COMMENT_SUFFIX: The default value for the message comment suffix.
  * @type {string}
  * @public
  * @memberof Constants
  * @example
- * console.log(DEFAULT_MESSAGE_LOG_SUFFIX);
+ * console.log(DEFAULT_MESSAGE_COMMENT_SUFFIX);
  *
- * @returns {string} - The default value for the message log suffix
+ * @returns {string} - The default value for the message comment suffix
  */
-export const DEFAULT_MESSAGE_LOG_SUFFIX: string = ':';
+export const DEFAULT_MESSAGE_COMMENT_SUFFIX: string = ':';
 
 /**
- * DEFAULT_ADD_EMPTY_LINE_BEFORE_LOG_MESSAGE_SETTING: The default value for the add empty line before comment setting.
+ * DEFAULT_ADD_EMPTY_LINE_BEFORE_COMMENT_MESSAGE_SETTING: The default value for the add empty line before comment setting.
  * @type {boolean}
  * @public
  * @memberof Constants
  * @example
- * console.log(DEFAULT_ADD_EMPTY_LINE_BEFORE_LOG_MESSAGE_SETTING);
+ * console.log(DEFAULT_ADD_EMPTY_LINE_BEFORE_COMMENT_MESSAGE_SETTING);
  *
  * @returns {boolean} - The default value for the add empty line before comment setting
  */
-export const DEFAULT_ADD_EMPTY_LINE_BEFORE_LOG_MESSAGE_SETTING: boolean = false;
+export const DEFAULT_ADD_EMPTY_LINE_BEFORE_COMMENT_MESSAGE_SETTING: boolean = false;
 
 /**
- * DEFAULT_ADD_EMPTY_LINE_AFTER_LOG_SETTING: The default value for the add empty line after log setting.
+ * DEFAULT_ADD_EMPTY_LINE_AFTER_COMMENT_SETTING: The default value for the add empty line after comment setting.
  * @type {boolean}
  * @public
  * @memberof Constants
  * @example
- * console.log(DEFAULT_ADD_EMPTY_LINE_AFTER_LOG_SETTING);
+ * console.log(DEFAULT_ADD_EMPTY_LINE_AFTER_COMMENT_SETTING);
  *
- * @returns {boolean} - The default value for the add empty line after log setting
+ * @returns {boolean} - The default value for the add empty line after comment setting
  */
-export const DEFAULT_ADD_EMPTY_LINE_AFTER_LOG_SETTING: boolean = false;
+export const DEFAULT_ADD_EMPTY_LINE_AFTER_COMMENT_SETTING: boolean = false;
 
 /**
  * DEFAULT_LITERAL_OPEN_SETTING: The default value for the literal open setting.
@@ -169,16 +169,16 @@ export const DEFAULT_LITERAL_OPEN_SETTING: string = '{';
 export const DEFAULT_LITERAL_CLOSE_SETTING: string = '}';
 
 /**
- * DEFAULT_USE_CURRENT_INDENT_SETTING: The default value for the use current indent setting.
+ * DEFAULT_USE_CURRENT_POSITION_SETTING: The default value for the use current position setting.
  * @type {boolean}
  * @public
  * @memberof Constants
  * @example
- * console.log(DEFAULT_USE_CURRENT_INDENT_SETTING);
+ * console.log(DEFAULT_USE_CURRENT_POSITION_SETTING);
  *
- * @returns {boolean} - The default value for the use current indent setting
+ * @returns {boolean} - The default value for the use current position setting
  */
-export const DEFAULT_USE_CURRENT_INDENT_SETTING: boolean = false;
+export const DEFAULT_USE_CURRENT_POSITION_SETTING: boolean = false;
 
 /**
  * DEFAULT_AUTHOR_SETTING: The default value for the author setting.
@@ -266,13 +266,13 @@ export const DEFAULT_SPECIAL_HIGHLIGHT_DECORATION: Object = {
 };
 
 /**
- * DEFAULT_CUSTOM_LOG_TEMPLATES: The default value for the custom log templates setting.
+ * DEFAULT_CUSTOM_COMMENT_TEMPLATES: The default value for the custom comment templates setting.
  * @type {string[]}
  * @public
  * @memberof Constants
  * @example
- * console.log(DEFAULT_CUSTOM_LOG_TEMPLATES);
+ * console.log(DEFAULT_CUSTOM_COMMENT_TEMPLATES);
  *
- * @returns {string[]} - The default value for the custom log templates setting
+ * @returns {string[]} - The default value for the custom comment templates setting
  */
-export const DEFAULT_CUSTOM_LOG_TEMPLATES: CommentTemplate[] = [];
+export const DEFAULT_CUSTOM_COMMENT_TEMPLATES: CommentTemplate[] = [];

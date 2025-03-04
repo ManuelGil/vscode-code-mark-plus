@@ -2,10 +2,10 @@ import { WorkspaceConfiguration } from 'vscode';
 
 import { CommentTemplate, HighlightRule } from '../types';
 import {
-  DEFAULT_ADD_EMPTY_LINE_AFTER_LOG_SETTING,
-  DEFAULT_ADD_EMPTY_LINE_BEFORE_LOG_MESSAGE_SETTING,
+  DEFAULT_ADD_EMPTY_LINE_AFTER_COMMENT_SETTING,
+  DEFAULT_ADD_EMPTY_LINE_BEFORE_COMMENT_MESSAGE_SETTING,
   DEFAULT_AUTHOR_SETTING,
-  DEFAULT_CUSTOM_LOG_TEMPLATES,
+  DEFAULT_CUSTOM_COMMENT_TEMPLATES,
   DEFAULT_ENABLE_SETTING,
   DEFAULT_HIGHLIGHT_ACTIVE_SETTING,
   DEFAULT_HIGHLIGHT_RULES,
@@ -13,12 +13,12 @@ import {
   DEFAULT_LICENSE_SETTING,
   DEFAULT_LITERAL_CLOSE_SETTING,
   DEFAULT_LITERAL_OPEN_SETTING,
-  DEFAULT_LOG_MESSAGE_PREFIX,
-  DEFAULT_LOG_MESSAGE_WRAPPED_SETTING,
-  DEFAULT_MESSAGE_LOG_DELIMITER,
-  DEFAULT_MESSAGE_LOG_SUFFIX,
+  DEFAULT_COMMENT_MESSAGE_PREFIX,
+  DEFAULT_COMMENT_MESSAGE_WRAPPED_SETTING,
+  DEFAULT_MESSAGE_COMMENT_DELIMITER,
+  DEFAULT_MESSAGE_COMMENT_SUFFIX,
   DEFAULT_SPECIAL_HIGHLIGHT_DECORATION,
-  DEFAULT_USE_CURRENT_INDENT_SETTING,
+  DEFAULT_USE_CURRENT_POSITION_SETTING,
   DEFAULT_VERSION_SETTING,
 } from './constants.config';
 
@@ -267,32 +267,32 @@ export class ExtensionConfig {
     // Determine whether to wrap the comment with additional formatting or markers
     this.isCommentMessageWrapped = config.get<boolean>(
       'isCommentMessageWrapped',
-      DEFAULT_LOG_MESSAGE_WRAPPED_SETTING,
+      DEFAULT_COMMENT_MESSAGE_WRAPPED_SETTING,
     );
     // Delimiter to separate different elements inside the comment (e.g., filename, line number, class, function, variable).
     this.commentDelimiter = config.get<string>(
       'commentDelimiter',
-      DEFAULT_MESSAGE_LOG_DELIMITER,
+      DEFAULT_MESSAGE_COMMENT_DELIMITER,
     );
     // Prefix added at the beginning of the comment.
     this.commentMessagePrefix = config.get<string>(
       'commentMessagePrefix',
-      DEFAULT_LOG_MESSAGE_PREFIX,
+      DEFAULT_COMMENT_MESSAGE_PREFIX,
     );
     // Suffix added at the end of the comment.
     this.commentMessageSuffix = config.get<string>(
       'commentMessageSuffix',
-      DEFAULT_MESSAGE_LOG_SUFFIX,
+      DEFAULT_MESSAGE_COMMENT_SUFFIX,
     );
     // Insert an empty line before the comment for improved readability.
     this.addEmptyLineBeforeComment = config.get<boolean>(
       'addEmptyLineBeforeComment',
-      DEFAULT_ADD_EMPTY_LINE_BEFORE_LOG_MESSAGE_SETTING,
+      DEFAULT_ADD_EMPTY_LINE_BEFORE_COMMENT_MESSAGE_SETTING,
     );
     // Insert an empty line after the comment for improved readability.
     this.addEmptyLineAfterComment = config.get<boolean>(
       'addEmptyLineAfterComment',
-      DEFAULT_ADD_EMPTY_LINE_AFTER_LOG_SETTING,
+      DEFAULT_ADD_EMPTY_LINE_AFTER_COMMENT_SETTING,
     );
     // The literal open characters for the comment.
     this.literalOpen = config.get<string>(
@@ -306,8 +306,8 @@ export class ExtensionConfig {
     );
     // Whether to use the current position for the comment.
     this.useCurrentPosition = config.get<boolean>(
-      'useCurrentIndent',
-      DEFAULT_USE_CURRENT_INDENT_SETTING,
+      'useCurrentPosition',
+      DEFAULT_USE_CURRENT_POSITION_SETTING,
     );
     // The author for the comment.
     this.author = config.get<string>('author', DEFAULT_AUTHOR_SETTING);
@@ -333,7 +333,7 @@ export class ExtensionConfig {
     // Custom comment templates for different languages. You can define a template per language using available variables (e.g., {{{logCommand}}}, {{{commentMessagePrefix}}}, {{{variableName}}}, {{{fileName}}}).
     this.customTemplates = config.get<CommentTemplate[]>(
       'customTemplates',
-      DEFAULT_CUSTOM_LOG_TEMPLATES,
+      DEFAULT_CUSTOM_COMMENT_TEMPLATES,
     );
   }
 
@@ -397,7 +397,7 @@ export class ExtensionConfig {
     this.literalClose = config.get<string>('literalClose', this.literalClose);
     // Whether to use the current position for the comment.
     this.useCurrentPosition = config.get<boolean>(
-      'useCurrentIndent',
+      'useCurrentPosition',
       this.useCurrentPosition,
     );
     // The author for the comment.

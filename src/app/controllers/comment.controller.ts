@@ -75,18 +75,13 @@ export class CommentController {
    * @returns {Promise<void>} - The promise with no return value
    */
   async insertTextInActiveEditor(): Promise<void> {
-    const {
-      useCurrentPosition: useCurrentIndent,
-      author,
-      version,
-      license,
-    } = this.service.config;
+    const { useCurrentPosition, author, version, license } =
+      this.service.config;
 
     const editor = window.activeTextEditor;
 
     if (!editor) {
-      const message = l10n.t('No active editor available!');
-      window.showErrorMessage(message);
+      window.showErrorMessage(l10n.t('No active editor available!'));
       return;
     }
 
@@ -96,42 +91,37 @@ export class CommentController {
 
     const functionInfo = await this.getFunctionInfo(editor);
 
-    if (!functionInfo) {
-      const message = l10n.t(
-        'No function found at the current cursor position.',
-      );
-      window.showErrorMessage(message);
-      return;
-    }
-
     let indent = '';
+    let insertPosition: Position;
 
-    if (useCurrentIndent) {
+    if (useCurrentPosition || !functionInfo) {
       indent = ' '.repeat(
         document.lineAt(position.line).firstNonWhitespaceCharacterIndex,
       );
+
+      insertPosition = new Position(position.line, 0);
     } else {
       indent = ' '.repeat(
         document.lineAt(functionInfo.range.start.line)
           .firstNonWhitespaceCharacterIndex,
       );
+
+      insertPosition = new Position(functionInfo.range.start.line, 0);
     }
 
     const docComment = await this.service.generateCommentSnippet({
       indent: indent,
       fileName: workspace.asRelativePath(fileName),
-      functionName: functionInfo.name,
-      signature: functionInfo.signature || 'N/A',
-      modifiers: functionInfo.modifiers || 'N/A',
-      parameters: functionInfo.parameters || 'None',
-      returnType: functionInfo.returnType || 'void',
+      functionName: functionInfo?.name || 'Unknown',
+      signature: functionInfo?.signature || 'N/A',
+      modifiers: functionInfo?.modifiers || 'N/A',
+      parameters: functionInfo?.parameters || 'None',
+      returnType: functionInfo?.returnType || 'void',
       date: new Date().toLocaleDateString(),
       author,
       version,
       license,
     } as CommentData);
-
-    const insertPosition = new Position(functionInfo.range.start.line, 0);
 
     editor.edit((editBuilder) => {
       editBuilder.insert(insertPosition, docComment);
@@ -154,7 +144,7 @@ export class CommentController {
     const editor = window.activeTextEditor;
 
     if (!editor) {
-      window.showErrorMessage('No active editor available!');
+      window.showErrorMessage(l10n.t('No active editor available!'));
       return;
     }
 
@@ -162,7 +152,7 @@ export class CommentController {
 
     const comments = this.service.findSingleLineComments(documentText);
     if (comments.length === 0) {
-      window.showInformationMessage('No comments found for removal');
+      window.showInformationMessage(l10n.t('No comments found for removal'));
       return;
     }
 
@@ -172,13 +162,12 @@ export class CommentController {
       comment,
     }));
 
-    const placeHolder = 'Select comments to remove';
     const selected = await window.showQuickPick(picks, {
       canPickMany: true,
-      placeHolder,
+      placeHolder: l10n.t('Select the comments to remove'),
     });
     if (!selected || selected.length === 0) {
-      window.showInformationMessage('No comments selected for removal');
+      window.showInformationMessage(l10n.t('No comments selected for removal'));
       return;
     }
 
@@ -199,7 +188,9 @@ export class CommentController {
       });
     });
 
-    window.showInformationMessage('Selected comments have been removed');
+    window.showInformationMessage(
+      l10n.t('Selected comments have been removed'),
+    );
   }
 
   // Private methods
