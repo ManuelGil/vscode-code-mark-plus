@@ -2,7 +2,7 @@
 	"name": "vscode-code-mark-plus",
 	"displayName": "CodeMark+",
 	"description": "CodeMark+ is a Visual Studio Code extension that helps you insert, remove, and highlight custom comments in your code.",
-	"version": "1.1.0",
+	"version": "1.1.1",
 	"icon": "icon.png",
 	"license": "MIT",
 	"publisher": "imgildev",
