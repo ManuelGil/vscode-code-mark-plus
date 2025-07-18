@@ -39,6 +39,13 @@ export class CommentService {
     cpp: '//',
     ruby: '#',
     go: '//',
+    kotlin: '//',
+    swift: '//',
+    scala: '//',
+    lua: '--',
+    perl: '#',
+    elixir: '#',
+    haskell: '--',
   };
 
   /**
@@ -276,6 +283,160 @@ export class CommentService {
         '{{indent}} */\n',
       ],
     },
+    {
+      language: 'kotlin',
+      template: [
+        '{{indent}}/**',
+        '{{indent}} * @description the {{{functionName}}} method',
+        '{{indent}} *',
+        '{{indent}} * @function {{{functionName}}}',
+        '{{indent}} * @signature {{{signature}}}',
+        '{{indent}} * @modifiers {{{modifiers}}}',
+        '{{indent}} *',
+        '{{indent}} * @params:',
+        '{{#parameters}}{{indent}} *   - {{{.}}}{{/parameters}}',
+        '{{indent}} * @returns {Type} - {{{returnType}}}',
+        '{{indent}} *',
+        '{{indent}} * @file {{{fileName}}}',
+        '{{indent}} * @date {{{date}}}',
+        '{{indent}} * @author {{{author}}}',
+        '{{indent}} * @version {{{version}}}',
+        '{{indent}} * @license {{{license}}}',
+        '{{indent}} */\n',
+      ],
+    },
+    {
+      language: 'swift',
+      template: [
+        '{{indent}}/**',
+        '{{indent}} * @description the {{{functionName}}} method',
+        '{{indent}} *',
+        '{{indent}} * @function {{{functionName}}}',
+        '{{indent}} * @signature {{{signature}}}',
+        '{{indent}} * @modifiers {{{modifiers}}}',
+        '{{indent}} *',
+        '{{indent}} * @params:',
+        '{{#parameters}}{{indent}} *   - {{{.}}}{{/parameters}}',
+        '{{indent}} * @returns {Type} - {{{returnType}}}',
+        '{{indent}} *',
+        '{{indent}} * @file {{{fileName}}}',
+        '{{indent}} * @date {{{date}}}',
+        '{{indent}} * @author {{{author}}}',
+        '{{indent}} * @version {{{version}}}',
+        '{{indent}} * @license {{{license}}}',
+        '{{indent}} */\n',
+      ],
+    },
+    {
+      language: 'scala',
+      template: [
+        '{{indent}}/**',
+        '{{indent}} * @description the {{{functionName}}} method',
+        '{{indent}} *',
+        '{{indent}} * @function {{{functionName}}}',
+        '{{indent}} * @signature {{{signature}}}',
+        '{{indent}} * @modifiers {{{modifiers}}}',
+        '{{indent}} *',
+        '{{indent}} * @params:',
+        '{{#parameters}}{{indent}} *   - {{{.}}}{{/parameters}}',
+        '{{indent}} * @returns {Type} - {{{returnType}}}',
+        '{{indent}} *',
+        '{{indent}} * @file {{{fileName}}}',
+        '{{indent}} * @date {{{date}}}',
+        '{{indent}} * @author {{{author}}}',
+        '{{indent}} * @version {{{version}}}',
+        '{{indent}} * @license {{{license}}}',
+        '{{indent}} */\n',
+      ],
+    },
+    {
+      language: 'lua',
+      template: [
+        '{{indent}}/**',
+        '{{indent}} * @description the {{{functionName}}} method',
+        '{{indent}} *',
+        '{{indent}} * @function {{{functionName}}}',
+        '{{indent}} * @signature {{{signature}}}',
+        '{{indent}} * @modifiers {{{modifiers}}}',
+        '{{indent}} *',
+        '{{indent}} * @params:',
+        '{{#parameters}}{{indent}} *   - {{{.}}}{{/parameters}}',
+        '{{indent}} * @returns {Type} - {{{returnType}}}',
+        '{{indent}} *',
+        '{{indent}} * @file {{{fileName}}}',
+        '{{indent}} * @date {{{date}}}',
+        '{{indent}} * @author {{{author}}}',
+        '{{indent}} * @version {{{version}}}',
+        '{{indent}} * @license {{{license}}}',
+        '{{indent}} */\n',
+      ],
+    },
+    {
+      language: 'perl',
+      template: [
+        '{{indent}}/**',
+        '{{indent}} * @description the {{{functionName}}} method',
+        '{{indent}} *',
+        '{{indent}} * @function {{{functionName}}}',
+        '{{indent}} * @signature {{{signature}}}',
+        '{{indent}} * @modifiers {{{modifiers}}}',
+        '{{indent}} *',
+        '{{indent}} * @params:',
+        '{{#parameters}}{{indent}} *   - {{{.}}}{{/parameters}}',
+        '{{indent}} * @returns {Type} - {{{returnType}}}',
+        '{{indent}} *',
+        '{{indent}} * @file {{{fileName}}}',
+        '{{indent}} * @date {{{date}}}',
+        '{{indent}} * @author {{{author}}}',
+        '{{indent}} * @version {{{version}}}',
+        '{{indent}} * @license {{{license}}}',
+        '{{indent}} */\n',
+      ],
+    },
+    {
+      language: 'elixir',
+      template: [
+        '{{indent}}/**',
+        '{{indent}} * @description the {{{functionName}}} method',
+        '{{indent}} *',
+        '{{indent}} * @function {{{functionName}}}',
+        '{{indent}} * @signature {{{signature}}}',
+        '{{indent}} * @modifiers {{{modifiers}}}',
+        '{{indent}} *',
+        '{{indent}} * @params:',
+        '{{#parameters}}{{indent}} *   - {{{.}}}{{/parameters}}',
+        '{{indent}} * @returns {Type} - {{{returnType}}}',
+        '{{indent}} *',
+        '{{indent}} * @file {{{fileName}}}',
+        '{{indent}} * @date {{{date}}}',
+        '{{indent}} * @author {{{author}}}',
+        '{{indent}} * @version {{{version}}}',
+        '{{indent}} * @license {{{license}}}',
+        '{{indent}} */\n',
+      ],
+    },
+    {
+      language: 'haskell',
+      template: [
+        '{{indent}}/**',
+        '{{indent}} * @description the {{{functionName}}} method',
+        '{{indent}} *',
+        '{{indent}} * @function {{{functionName}}}',
+        '{{indent}} * @signature {{{signature}}}',
+        '{{indent}} * @modifiers {{{modifiers}}}',
+        '{{indent}} *',
+        '{{indent}} * @params:',
+        '{{#parameters}}{{indent}} *   - {{{.}}}{{/parameters}}',
+        '{{indent}} * @returns {Type} - {{{returnType}}}',
+        '{{indent}} *',
+        '{{indent}} * @file {{{fileName}}}',
+        '{{indent}} * @date {{{date}}}',
+        '{{indent}} * @author {{{author}}}',
+        '{{indent}} * @version {{{version}}}',
+        '{{indent}} * @license {{{license}}}',
+        '{{indent}} */\n',
+      ],
+    },
   ];
 
   // -----------------------------------------------------------------
@@ -336,6 +497,13 @@ export class CommentService {
       'cpp',
       'ruby',
       'go',
+      'kotlin',
+      'swift',
+      'scala',
+      'lua',
+      'perl',
+      'elixir',
+      'haskell',
     ];
 
     const language = supportedLanguages.includes(languageId)
@@ -477,22 +645,5 @@ export class CommentService {
     }
 
     return content;
-  }
-
-  /**
-   * The escapeRegExp method.
-   * Escape the regular expression characters in the input string.
-   * @function escapeRegExp
-   * @private
-   * @memberof CommentService
-   * @example
-   * this.escapeRegExp(input);
-   *
-   * @param {string} input - The input string
-   *
-   * @returns {string} - The escaped string
-   */
-  private escapeRegExp(input: string): string {
-    return input.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
   }
 }

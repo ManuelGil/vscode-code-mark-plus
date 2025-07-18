@@ -21,7 +21,14 @@
 				"python",
 				"cpp",
 				"ruby",
-				"go"
+				"go",
+				"kotlin",
+				"swift",
+				"scala",
+				"lua",
+				"perl",
+				"elixir",
+				"haskell"
 			],
 			"enumDescriptions": [
 				"JavaScript",
@@ -33,7 +40,14 @@
 				"Python",
 				"C++",
 				"Ruby",
-				"Go"
+				"Go",
+				"Kotlin",
+				"Swift",
+				"Scala",
+				"Lua",
+				"Perl",
+				"Elixir",
+				"Haskell"
 			],
 			"scope": "resource",
 			"description": "Default language to be used for comments."

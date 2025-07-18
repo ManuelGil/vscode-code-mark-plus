@@ -9,6 +9,7 @@ import {
 } from 'vscode';
 
 import { ExtensionConfig } from '../configs';
+import { escapeRegExp } from '../helpers';
 
 /**
  * HighlightController manages syntax highlighting within the editor.
@@ -35,6 +36,16 @@ export class HighlightController {
   // -----------------------------------------------------------------
 
   // Private properties
+
+  /**
+   * Maximum file size in bytes for which full highlighting will be applied.
+   * Files larger than this will have limited or no highlighting to preserve performance.
+   *
+   * @private
+   * @type {number}
+   * @memberof HighlightController
+   */
+  private readonly MAX_FILE_SIZE = 1024 * 1024; // 1MB limit
 
   /**
    * A map of decoration types for each configured keyword.
@@ -103,6 +114,17 @@ export class HighlightController {
     }
 
     this.clearHighlighting(editor);
+
+    // Check file size to avoid performance issues with large files
+    const fileSize = editor.document.getText().length;
+    if (fileSize > this.MAX_FILE_SIZE) {
+      // For large files, we apply limited highlighting or skip it entirely
+      window.setStatusBarMessage(
+        `CodeMark+: Limited highlighting applied (file size: ${Math.round(fileSize / 1024)}KB exceeds limit)`,
+        5000,
+      );
+      return;
+    }
 
     const decorations = this.getHighlightDecorations(editor.document);
 
@@ -192,7 +214,7 @@ export class HighlightController {
    * This method is called when the configuration changes.
    *
    * @function getKeywordDecorations
-   * @public
+   * @private
    * @memberof HighlightController
    * @example
    * const decorations = service.getKeywordDecorations(document);
@@ -211,20 +233,53 @@ export class HighlightController {
       type: TextEditorDecorationType;
       ranges: DecorationOptions[];
     }[] = [];
+
+    // Avoid excessive processing for very large files
     const text = document.getText();
 
-    for (const rule of highlightRules) {
-      const regex = new RegExp(`\\b${this.escapeRegExp(rule.keyword)}\\b`, 'g');
-      const ranges: DecorationOptions[] = [];
-      let match: RegExpExecArray | null;
-      while ((match = regex.exec(text))) {
-        const startPos = document.positionAt(match.index);
-        const endPos = document.positionAt(match.index + match[0].length);
-        ranges.push({ range: new Range(startPos, endPos) });
+    try {
+      // Limit the number of decorations per keyword to avoid performance issues
+      const MAX_DECORATIONS_PER_KEYWORD = 1000;
+
+      for (const rule of highlightRules) {
+        // Skip processing if the rule doesn't have a valid keyword
+        if (!rule.keyword || typeof rule.keyword !== 'string') {
+          continue;
+        }
+
+        const regex = new RegExp(`\\b${escapeRegExp(rule.keyword)}\\b`, 'g');
+        const ranges: DecorationOptions[] = [];
+        let match: RegExpExecArray | null;
+
+        // Count matches to avoid excessive decorations
+        let matchCount = 0;
+
+        while ((match = regex.exec(text))) {
+          // Limit the number of decorations for performance
+          if (matchCount >= MAX_DECORATIONS_PER_KEYWORD) {
+            window.setStatusBarMessage(
+              `CodeMark+: Too many occurrences of "${rule.keyword}". Limiting to ${MAX_DECORATIONS_PER_KEYWORD} for performance.`,
+              5000,
+            );
+            break;
+          }
+
+          const startPos = document.positionAt(match.index);
+          const endPos = document.positionAt(match.index + match[0].length);
+          ranges.push({ range: new Range(startPos, endPos) });
+          matchCount++;
+        }
+
+        if (ranges.length > 0 && this.decorationTypes[rule.keyword]) {
+          decorations.push({
+            type: this.decorationTypes[rule.keyword],
+            ranges,
+          });
+        }
       }
-      if (ranges.length > 0) {
-        decorations.push({ type: this.decorationTypes[rule.keyword], ranges });
-      }
+    } catch (error) {
+      // Gracefully handle errors during keyword parsing
+      console.error('Error while processing highlight keywords:', error);
     }
 
     return decorations;
@@ -235,7 +290,7 @@ export class HighlightController {
    * This method is called when the configuration changes.
    *
    * @function getSpecialHighlightDecorations
-   * @public
+   * @private
    * @memberof HighlightController
    * @example
    * const decorations = service.getSpecialHighlightDecorations(document);
@@ -278,15 +333,15 @@ export class HighlightController {
    * "line N", and "range N-M".
    *
    * @function parseSpecialDirective
-   * @public
+   * @private
    * @memberof HighlightController
    * @example
    * const ranges = service.parseSpecialDirective(directive, document, lineIndex, lines);
    *
-   * @param {string} directive - The directive string (e.g., "next line", "range 3-5")
+   * @param {string} directive - The directive to parse
    * @param {TextDocument} document - The document containing the directive
-   * @param {number} lineIndex - The line where the directive is found
-   * @param {string[]} lines - The full list of lines in the document
+   * @param {number} lineIndex - The line number where the directive was found
+   * @param {string[]} lines - The document text split into lines
    *
    * @returns {DecorationOptions[]} - A list of decoration ranges based on the directive
    */
@@ -402,23 +457,5 @@ export class HighlightController {
     options: DecorationRenderOptions,
   ): TextEditorDecorationType {
     return window.createTextEditorDecorationType(options);
-  }
-
-  /**
-   * Escapes a string to be safely used in a regular expression.
-   * This method is used to escape special characters in keyword strings.
-   *
-   * @function escapeRegExp
-   * @private
-   * @memberof HighlightController
-   * @example
-   * const escaped = service.escapeRegExp(input);
-   *
-   * @param {string} input - The string to escape
-   *
-   * @returns {string} - The escaped string
-   */
-  private escapeRegExp(input: string): string {
-    return input.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
   }
 }

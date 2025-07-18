@@ -32,10 +32,33 @@ export async function activate(context: vscode.ExtensionContext) {
     return;
   }
 
+  // Try to load previously selected workspace folder from global state
+  const previousFolderUri = context.globalState.get<string>(
+    'selectedWorkspaceFolder',
+  );
+  let previousFolder: vscode.WorkspaceFolder | undefined;
+
+  if (previousFolderUri) {
+    // Find the workspace folder by URI
+    previousFolder = vscode.workspace.workspaceFolders.find(
+      (folder) => folder.uri.toString() === previousFolderUri,
+    );
+  }
+
   if (vscode.workspace.workspaceFolders.length === 1) {
-    // Optionally, prompt the user to select a workspace folder if multiple are available
+    // Determine the workspace folder to use
+    // Only one workspace folder available
     resource = vscode.workspace.workspaceFolders[0];
+  } else if (previousFolder) {
+    // Use previously selected workspace folder if available
+    resource = previousFolder;
+
+    // Notify the user which workspace is being used
+    vscode.window.showInformationMessage(
+      vscode.l10n.t('Using workspace folder: {0}', [resource.name]),
+    );
   } else {
+    // Multiple workspace folders and no previous selection
     const placeHolder = vscode.l10n.t(
       'Select a workspace folder to use. This folder will be used to load workspace-specific configuration for the extension',
     );
@@ -44,6 +67,14 @@ export async function activate(context: vscode.ExtensionContext) {
     });
 
     resource = selectedFolder;
+
+    // Remember the selection for future use
+    if (resource) {
+      context.globalState.update(
+        'selectedWorkspaceFolder',
+        resource.uri.toString(),
+      );
+    }
   }
 
   // -----------------------------------------------------------------
@@ -62,19 +93,23 @@ export async function activate(context: vscode.ExtensionContext) {
       resource?.uri,
     );
 
-    if (
-      event.affectsConfiguration(
-        `${EXTENSION_ID}.highlightRules`,
-        resource?.uri,
-      ) ||
-      event.affectsConfiguration(
-        `${EXTENSION_ID}.specialHighlightDecoration`,
-        resource?.uri,
-      )
-    ) {
+    if (event.affectsConfiguration(`${EXTENSION_ID}.enable`, resource?.uri)) {
+      const isEnabled = workspaceConfig.get<boolean>('enable');
+
       config.update(workspaceConfig);
-      highlightController.refreshConfiguration();
-      updateHighlighting();
+
+      if (isEnabled) {
+        const message = vscode.l10n.t(
+          'The {0} extension is now enabled and ready to use',
+          [EXTENSION_DISPLAY_NAME],
+        );
+        vscode.window.showInformationMessage(message);
+      } else {
+        const message = vscode.l10n.t('The {0} extension is now disabled', [
+          EXTENSION_DISPLAY_NAME,
+        ]);
+        vscode.window.showInformationMessage(message);
+      }
     }
 
     if (event.affectsConfiguration(EXTENSION_ID, resource?.uri)) {
@@ -149,50 +184,90 @@ export async function activate(context: vscode.ExtensionContext) {
   // Check for updates to the extension
   try {
     // Retrieve the latest version
-    VSCodeMarketplaceClient.getLatestVersion(
-      USER_PUBLISHER,
-      EXTENSION_NAME,
-    ).then((latestVersion) => {
-      // Check if the latest version is different from the current version
-      if (latestVersion !== currentVersion) {
-        const actions: vscode.MessageItem[] = [
-          {
-            title: vscode.l10n.t('Update Now'),
-          },
-          {
-            title: vscode.l10n.t('Dismiss'),
-          },
-        ];
+    VSCodeMarketplaceClient.getLatestVersion(USER_PUBLISHER, EXTENSION_NAME)
+      .then((latestVersion) => {
+        // Check if the latest version is different from the current version
+        if (latestVersion !== currentVersion) {
+          const actions: vscode.MessageItem[] = [
+            {
+              title: vscode.l10n.t('Update Now'),
+            },
+            {
+              title: vscode.l10n.t('Dismiss'),
+            },
+          ];
 
-        const message = vscode.l10n.t(
-          'A new version of {0} is available. Update to version {1} now',
-          [EXTENSION_DISPLAY_NAME, latestVersion],
-        );
-        vscode.window
-          .showInformationMessage(message, ...actions)
-          .then(async (option) => {
-            if (!option) {
-              return;
-            }
+          const message = vscode.l10n.t(
+            'A new version of {0} is available. Update to version {1} now',
+            [EXTENSION_DISPLAY_NAME, latestVersion],
+          );
+          vscode.window
+            .showInformationMessage(message, ...actions)
+            .then(async (option) => {
+              if (!option) {
+                return;
+              }
 
-            // Handle the actions
-            switch (option?.title) {
-              case actions[0].title:
-                await vscode.commands.executeCommand(
-                  'workbench.extensions.action.install.anotherVersion',
-                  `${USER_PUBLISHER}.${EXTENSION_NAME}`,
-                );
-                break;
+              // Handle the actions
+              switch (option?.title) {
+                case actions[0].title:
+                  await vscode.commands.executeCommand(
+                    'workbench.extensions.action.install.anotherVersion',
+                    `${USER_PUBLISHER}.${EXTENSION_NAME}`,
+                  );
+                  break;
 
-              default:
-                break;
-            }
-          });
-      }
-    });
+                default:
+                  break;
+              }
+            });
+        }
+      })
+      .catch((error) => {
+        // Silently log the error without bothering the user
+        // This prevents issues when offline or when marketplace is unreachable
+        console.error('Error checking for updates:', error);
+      });
   } catch (error) {
-    console.error('Error retrieving extension version:', error);
+    // Only log fatal errors that occur during the update check process
+    console.error('Fatal error while checking for extension updates:', error);
   }
+
+  // -----------------------------------------------------------------
+  // Register commands
+  // -----------------------------------------------------------------
+
+  // Register a command to change the selected workspace folder
+  const disposableChangeWorkspace = vscode.commands.registerCommand(
+    `${EXTENSION_ID}.changeWorkspace`,
+    async () => {
+      const placeHolder = vscode.l10n.t('Select a workspace folder to use');
+      const selectedFolder = await vscode.window.showWorkspaceFolderPick({
+        placeHolder,
+      });
+
+      if (selectedFolder) {
+        resource = selectedFolder;
+        context.globalState.update(
+          'selectedWorkspaceFolder',
+          resource.uri.toString(),
+        );
+
+        // Update configuration for the new workspace folder
+        const workspaceConfig = vscode.workspace.getConfiguration(
+          EXTENSION_ID,
+          resource?.uri,
+        );
+        config.update(workspaceConfig);
+
+        vscode.window.showInformationMessage(
+          vscode.l10n.t('Switched to workspace folder: {0}', [resource.name]),
+        );
+      }
+    },
+  );
+
+  context.subscriptions.push(disposableChangeWorkspace);
 
   // -----------------------------------------------------------------
   // Register CommentController
@@ -269,16 +344,26 @@ export async function activate(context: vscode.ExtensionContext) {
     }
   };
 
-  // Debounced update using an inline closure.
-  const debouncedUpdate = (() => {
+  /**
+   * Debounce function to prevent excessive updates
+   * @param func Function to debounce
+   * @param wait Wait time in milliseconds
+   */
+  function debounce<T extends (...args: any[]) => any>(
+    func: T,
+    wait: number,
+  ): (...args: Parameters<T>) => void {
     let timeout: NodeJS.Timeout | undefined;
-    return () => {
+    return function (...args: Parameters<T>) {
       if (timeout) {
         clearTimeout(timeout);
       }
-      timeout = setTimeout(() => updateHighlighting(), 200);
+      timeout = setTimeout(() => func(...args), wait);
     };
-  })();
+  }
+
+  // Create a debounced version of the update function
+  const debouncedUpdate = debounce(updateHighlighting, 200);
 
   // Subscribe to changes in the active editor.
   context.subscriptions.push(
