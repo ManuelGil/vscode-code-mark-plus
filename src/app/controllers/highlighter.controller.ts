@@ -1,6 +1,8 @@
 import {
   DecorationOptions,
   DecorationRenderOptions,
+  l10n,
+  Position,
   Range,
   TextDocument,
   TextEditor,
@@ -109,27 +111,36 @@ export class HighlightController {
    * @returns {void} - No return value
    */
   updateHighlighting(editor: TextEditor): void {
-    if (!editor) {
-      return;
-    }
+    try {
+      if (!editor) {
+        return;
+      }
 
-    this.clearHighlighting(editor);
+      this.clearHighlighting(editor);
 
-    // Check file size to avoid performance issues with large files
-    const fileSize = editor.document.getText().length;
-    if (fileSize > this.MAX_FILE_SIZE) {
-      // For large files, we apply limited highlighting or skip it entirely
-      window.setStatusBarMessage(
-        `CodeMark+: Limited highlighting applied (file size: ${Math.round(fileSize / 1024)}KB exceeds limit)`,
-        5000,
+      // Check file size to avoid performance issues with large files
+      const fileSize = editor.document.getText().length;
+      if (fileSize > this.MAX_FILE_SIZE) {
+        // For large files, we apply limited highlighting or skip it entirely
+        window.setStatusBarMessage(
+          `CodeMark+: Limited highlighting applied (file size: ${Math.round(
+            fileSize / 1024,
+          )}KB exceeds limit)`,
+          5000,
+        );
+        return;
+      }
+
+      const decorations = this.getHighlightDecorations(editor.document);
+
+      for (const deco of decorations) {
+        editor.setDecorations(deco.type, deco.ranges);
+      }
+    } catch (error) {
+      console.error('Error updating highlighting:', error);
+      window.showErrorMessage(
+        l10n.t('An unexpected error occurred while updating highlighting'),
       );
-      return;
-    }
-
-    const decorations = this.getHighlightDecorations(editor.document);
-
-    for (const deco of decorations) {
-      editor.setDecorations(deco.type, deco.ranges);
     }
   }
 
@@ -152,14 +163,13 @@ export class HighlightController {
       return;
     }
 
-    // Clear decorations for keyword rules.
-    for (const key in this.decorationTypes) {
-      editor.setDecorations(this.decorationTypes[key], []);
+    const allDecorations = Object.values(this.decorationTypes);
+    if (this.specialDecoration) {
+      allDecorations.push(this.specialDecoration);
     }
 
-    // Clear special decoration.
-    if (this.specialDecoration) {
-      editor.setDecorations(this.specialDecoration, []);
+    for (const decorationType of allDecorations) {
+      editor.setDecorations(decorationType, []);
     }
   }
 
@@ -176,10 +186,6 @@ export class HighlightController {
    * @returns {void} - No return value
    */
   refreshConfiguration(): void {
-    // Dispose existing keyword decorations.
-    Object.keys(this.decorationTypes).forEach((key) =>
-      this.decorationTypes[key].dispose(),
-    );
     this.createDecorationTypes();
     this.createSpecialDecoration();
   }
@@ -198,7 +204,7 @@ export class HighlightController {
    *
    * @returns {{ type: TextEditorDecorationType; ranges: DecorationOptions[]; }[]} - A list of decoration objects with type and range
    */
-  getHighlightDecorations(document: TextDocument): {
+  private getHighlightDecorations(document: TextDocument): {
     type: TextEditorDecorationType;
     ranges: DecorationOptions[];
   }[] {
@@ -227,62 +233,42 @@ export class HighlightController {
     type: TextEditorDecorationType;
     ranges: DecorationOptions[];
   }[] {
-    const { highlightRules } = this.config;
+    const lines = document.getText().split('\n');
+    const decorations: { [key: string]: DecorationOptions[] } = {};
 
-    const decorations: {
-      type: TextEditorDecorationType;
-      ranges: DecorationOptions[];
-    }[] = [];
+    // Pre-compile regexes for efficiency
+    const rules = this.config.highlightRules
+      .filter((rule) => this.decorationTypes[rule.keyword]) // Only use rules with existing decoration types
+      .map((rule) => ({
+        keyword: rule.keyword,
+        regex: new RegExp(`\\b${escapeRegExp(rule.keyword)}\\b`, 'g'),
+      }));
 
-    // Avoid excessive processing for very large files
-    const text = document.getText();
+    for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+      const line = lines[lineIndex];
+      const lineOffset = document.offsetAt(new Position(lineIndex, 0));
 
-    try {
-      // Limit the number of decorations per keyword to avoid performance issues
-      const MAX_DECORATIONS_PER_KEYWORD = 1000;
+      for (const rule of rules) {
+        rule.regex.lastIndex = 0; // Reset regex state for each line
+        let match;
+        while ((match = rule.regex.exec(line))) {
+          const start = document.positionAt(lineOffset + match.index);
+          const end = document.positionAt(lineOffset + match.index + match[0].length);
+          const range = new Range(start, end);
 
-      for (const rule of highlightRules) {
-        // Skip processing if the rule doesn't have a valid keyword
-        if (!rule.keyword || typeof rule.keyword !== 'string') {
-          continue;
-        }
-
-        const regex = new RegExp(`\\b${escapeRegExp(rule.keyword)}\\b`, 'g');
-        const ranges: DecorationOptions[] = [];
-        let match: RegExpExecArray | null;
-
-        // Count matches to avoid excessive decorations
-        let matchCount = 0;
-
-        while ((match = regex.exec(text))) {
-          // Limit the number of decorations for performance
-          if (matchCount >= MAX_DECORATIONS_PER_KEYWORD) {
-            window.setStatusBarMessage(
-              `CodeMark+: Too many occurrences of "${rule.keyword}". Limiting to ${MAX_DECORATIONS_PER_KEYWORD} for performance.`,
-              5000,
-            );
-            break;
+          if (!decorations[rule.keyword]) {
+            decorations[rule.keyword] = [];
           }
-
-          const startPos = document.positionAt(match.index);
-          const endPos = document.positionAt(match.index + match[0].length);
-          ranges.push({ range: new Range(startPos, endPos) });
-          matchCount++;
-        }
-
-        if (ranges.length > 0 && this.decorationTypes[rule.keyword]) {
-          decorations.push({
-            type: this.decorationTypes[rule.keyword],
-            ranges,
-          });
+          decorations[rule.keyword].push({ range });
         }
       }
-    } catch (error) {
-      // Gracefully handle errors during keyword parsing
-      console.error('Error while processing highlight keywords:', error);
     }
 
-    return decorations;
+    // Format the results for the editor
+    return Object.keys(decorations).map((keyword) => ({
+      type: this.decorationTypes[keyword],
+      ranges: decorations[keyword],
+    }));
   }
 
   /**

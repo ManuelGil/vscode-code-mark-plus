@@ -59,7 +59,7 @@ CodeMark+ enables:
 
 - **Real‑Time Highlighting**: Styles keywords and directives as you type.
 - **Customizable Rules**: Define colors, font styles, and keywords in settings.
-- **Inline Directives**: Highlight next/previous/current line, specific line, range, or code block.
+- **Inline Directives**: Highlight next/previous/current line, specific line, or range.
 - **Comment Management**: Commands to insert, remove, and clear comments.
 - **Keyboard Shortcuts**: Quick access to all commands.
 - **Performance Optimized**: Efficient scanning, lazy updates, and caching for large workspaces.
@@ -84,7 +84,6 @@ Supported directives:
 - `next line`, `previous line`, `current line`
 - `line <number>`
 - `range <start>-<end>`
-- `block`
 
 ### Insert & Remove Comments
 

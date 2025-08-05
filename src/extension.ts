@@ -185,12 +185,12 @@ export async function activate(context: vscode.ExtensionContext) {
   try {
     // Retrieve the latest version
     VSCodeMarketplaceClient.getLatestVersion(USER_PUBLISHER, EXTENSION_NAME)
-      .then((latestVersion) => {
+      .then((latestVersion: string) => {
         // Check if the latest version is different from the current version
-        if (latestVersion !== currentVersion) {
+        if (latestVersion > currentVersion) {
           const actions: vscode.MessageItem[] = [
             {
-              title: vscode.l10n.t('Update Now'),
+              title: vscode.l10n.t('Update'),
             },
             {
               title: vscode.l10n.t('Dismiss'),
@@ -203,7 +203,7 @@ export async function activate(context: vscode.ExtensionContext) {
           );
           vscode.window
             .showInformationMessage(message, ...actions)
-            .then(async (option) => {
+            .then((option) => {
               if (!option) {
                 return;
               }
@@ -211,22 +211,29 @@ export async function activate(context: vscode.ExtensionContext) {
               // Handle the actions
               switch (option?.title) {
                 case actions[0].title:
-                  await vscode.commands.executeCommand(
-                    'workbench.extensions.action.install.anotherVersion',
-                    `${USER_PUBLISHER}.${EXTENSION_NAME}`,
+                  vscode.env.openExternal(
+                    vscode.Uri.parse(
+                      `https://marketplace.visualstudio.com/items?itemName=${USER_PUBLISHER}.${EXTENSION_NAME}`,
+                    ),
                   );
-                  break;
-
-                default:
                   break;
               }
             });
         }
       })
-      .catch((error) => {
-        // Silently log the error without bothering the user
-        // This prevents issues when offline or when marketplace is unreachable
-        console.error('Error checking for updates:', error);
+      .catch((error: unknown) => {
+        if (error instanceof Error) {
+          console.error('Error checking for updates:', error.message);
+        } else {
+          console.error(
+            'An unknown error occurred while checking for updates:',
+            error,
+          );
+        }
+        const message = vscode.l10n.t(
+          'Failed to check for new version of the extension',
+        );
+        vscode.window.showErrorMessage(message);
       });
   } catch (error) {
     // Only log fatal errors that occur during the update check process

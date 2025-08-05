@@ -75,57 +75,64 @@ export class CommentController {
    * @returns {Promise<void>} - The promise with no return value
    */
   async insertTextInActiveEditor(): Promise<void> {
-    const { useCurrentPosition, author, version, license } =
-      this.service.config;
+    try {
+      const { useCurrentPosition, author, version, license } =
+        this.service.config;
 
-    const editor = window.activeTextEditor;
+      const editor = window.activeTextEditor;
 
-    if (!editor) {
-      window.showErrorMessage(l10n.t('No active editor available!'));
-      return;
-    }
+      if (!editor) {
+        window.showErrorMessage(l10n.t('No active editor available!'));
+        return;
+      }
 
-    const document = editor.document;
-    const position = editor.selection.active;
-    const fileName = document.fileName;
+      const document = editor.document;
+      const position = editor.selection.active;
+      const fileName = document.fileName;
 
-    const functionInfo = await this.getFunctionInfo(editor);
+      const functionInfo = await this.getFunctionInfo(editor);
 
-    let indent = '';
-    let insertPosition: Position;
+      let indent = '';
+      let insertPosition: Position;
 
-    if (useCurrentPosition || !functionInfo) {
-      indent = ' '.repeat(
-        document.lineAt(position.line).firstNonWhitespaceCharacterIndex,
+      if (useCurrentPosition || !functionInfo) {
+        indent = ' '.repeat(
+          document.lineAt(position.line).firstNonWhitespaceCharacterIndex,
+        );
+
+        insertPosition = new Position(position.line, 0);
+      } else {
+        indent = ' '.repeat(
+          document.lineAt(functionInfo.range.start.line)
+            .firstNonWhitespaceCharacterIndex,
+        );
+
+        insertPosition = new Position(functionInfo.range.start.line, 0);
+      }
+
+      const docComment = await this.service.generateCommentSnippet({
+        indent: indent,
+        fileName: workspace.asRelativePath(fileName),
+        functionName: functionInfo?.name || 'Unknown',
+        signature: functionInfo?.signature || 'N/A',
+        modifiers: functionInfo?.modifiers || 'N/A',
+        parameters: functionInfo?.parameters || 'None',
+        returnType: functionInfo?.returnType || 'void',
+        date: new Date().toLocaleDateString(),
+        author,
+        version,
+        license,
+      } as CommentData);
+
+      editor.edit((editBuilder) => {
+        editBuilder.insert(insertPosition, docComment);
+      });
+    } catch (error) {
+      console.error('Error inserting comment:', error);
+      window.showErrorMessage(
+        l10n.t('An unexpected error occurred while inserting the comment'),
       );
-
-      insertPosition = new Position(position.line, 0);
-    } else {
-      indent = ' '.repeat(
-        document.lineAt(functionInfo.range.start.line)
-          .firstNonWhitespaceCharacterIndex,
-      );
-
-      insertPosition = new Position(functionInfo.range.start.line, 0);
     }
-
-    const docComment = await this.service.generateCommentSnippet({
-      indent: indent,
-      fileName: workspace.asRelativePath(fileName),
-      functionName: functionInfo?.name || 'Unknown',
-      signature: functionInfo?.signature || 'N/A',
-      modifiers: functionInfo?.modifiers || 'N/A',
-      parameters: functionInfo?.parameters || 'None',
-      returnType: functionInfo?.returnType || 'void',
-      date: new Date().toLocaleDateString(),
-      author,
-      version,
-      license,
-    } as CommentData);
-
-    editor.edit((editBuilder) => {
-      editBuilder.insert(insertPosition, docComment);
-    });
   }
 
   /**
@@ -141,56 +148,69 @@ export class CommentController {
    * @returns {Promise<void>} - The promise with no return value
    */
   async removeSingleLineComments(): Promise<void> {
-    const editor = window.activeTextEditor;
+    try {
+      const editor = window.activeTextEditor;
 
-    if (!editor) {
-      window.showErrorMessage(l10n.t('No active editor available!'));
-      return;
-    }
+      if (!editor) {
+        window.showErrorMessage(l10n.t('No active editor available!'));
+        return;
+      }
 
-    const documentText = editor.document.getText();
+      const documentText = editor.document.getText();
 
-    const comments = this.service.findSingleLineComments(documentText);
-    if (comments.length === 0) {
-      window.showInformationMessage(l10n.t('No comments found for removal'));
-      return;
-    }
+      const comments = this.service.findSingleLineComments(documentText);
+      if (comments.length === 0) {
+        window.showInformationMessage(l10n.t('No comments found for removal'));
+        return;
+      }
 
-    const picks = comments.map((comment) => ({
-      label: `Line ${comment.line}: ${comment.preview}`,
-      description: comment.fullText,
-      comment,
-    }));
+      const picks = comments.map((comment) => ({
+        label: `Line ${comment.line}: ${comment.preview}`,
+        description: comment.fullText,
+        comment,
+      }));
 
-    const selected = await window.showQuickPick(picks, {
-      canPickMany: true,
-      placeHolder: l10n.t('Select the comments to remove'),
-    });
-    if (!selected || selected.length === 0) {
-      window.showInformationMessage(l10n.t('No comments selected for removal'));
-      return;
-    }
-
-    await editor.edit((editBuilder) => {
-      const sorted = selected.sort((a, b) => b.comment.line - a.comment.line);
-      sorted.forEach((item) => {
-        const startPos = editor.document.positionAt(item.comment.start);
-        let endPos = editor.document.positionAt(item.comment.end);
-
-        const nextCharRange = new Range(endPos, endPos.translate(0, 1));
-        const nextChar = editor.document.getText(nextCharRange);
-        if (nextChar === ';') {
-          endPos = endPos.translate(0, 1);
-        }
-
-        const range = new Range(startPos, endPos);
-        editBuilder.delete(range);
+      const selected = await window.showQuickPick(picks, {
+        canPickMany: true,
+        placeHolder: l10n.t('Select the comments to remove'),
       });
-    });
+      if (!selected || selected.length === 0) {
+        window.showInformationMessage(
+          l10n.t('No comments selected for removal'),
+        );
+        return;
+      }
 
-    window.showInformationMessage(
-      l10n.t('Selected comments have been removed'),
-    );
+      await editor.edit((editBuilder) => {
+        const sorted = selected.sort((a, b) => b.comment.line - a.comment.line);
+        sorted.forEach((item) => {
+          const startPos = editor.document.positionAt(item.comment.start);
+          const endPos = editor.document.positionAt(item.comment.end);
+
+          const line = editor.document.lineAt(startPos.line);
+          const lineText = line.text.trim();
+          const commentText = editor.document
+            .getText(new Range(startPos, endPos))
+            .trim();
+
+          if (lineText === commentText) {
+            editBuilder.delete(line.rangeIncludingLineBreak);
+          } else {
+            const range = new Range(startPos, endPos);
+            editBuilder.delete(range);
+          }
+        });
+      });
+
+      window.showInformationMessage(
+        l10n.t('Selected comments have been removed'),
+      );
+    } catch (error) {
+      console.error('Error removing comments:', error);
+      window.showErrorMessage(
+        l10n.t('An unexpected error occurred while removing comments'),
+      );
+    }
   }
 
   // Private methods
@@ -212,11 +232,17 @@ export class CommentController {
   ): Promise<FunctionInfo | undefined> {
     const document = editor.document;
     const position = editor.selection.active;
+    let symbols: DocumentSymbol[] | undefined;
 
-    const symbols = (await commands.executeCommand(
-      'vscode.executeDocumentSymbolProvider',
-      document.uri,
-    )) as DocumentSymbol[];
+    try {
+      symbols = (await commands.executeCommand(
+        'vscode.executeDocumentSymbolProvider',
+        document.uri,
+      )) as DocumentSymbol[];
+    } catch (error) {
+      console.error('Error getting function info:', error);
+      return undefined; // Fail gracefully
+    }
 
     if (!symbols) {
       return undefined;

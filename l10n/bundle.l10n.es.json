@@ -9,11 +9,15 @@
 	"Release Notes": "Notas de la versión",
 	"Dismiss": "Cerrar",
 	"A new version of {0} is available. Update to version {1} now": "Hay una nueva versión de {0} disponible. Actualiza a la versión {1} ahora",
-	"Update Now": "Actualizar ahora",
+	"Update": "Actualizar",
+	"Failed to check for new version of the extension": "Error al buscar una nueva versión de la extensión",
 	"No active editor available!": "¡No hay ningún editor activo!",
 	"No function found at the current cursor position": "No se encontró ninguna función en la posición actual del cursor",
+	"An unexpected error occurred while inserting the comment": "Ocurrió un error inesperado al insertar el comentario",
 	"No comments found for removal": "No se han encontrado comentarios para eliminar",
 	"No comments selected for removal": "No se han seleccionado comentarios para eliminar",
 	"Select the comments to remove": "Selecciona los comentarios que deseas eliminar",
-	"Selected comments have been removed": "Los comentarios seleccionados se han eliminado"
+	"An unexpected error occurred while removing comments": "Ocurrió un error inesperado al eliminar comentarios",
+	"Selected comments have been removed": "Los comentarios seleccionados se han eliminado",
+	"An unexpected error occurred while updating highlighting": "Ocurrió un error inesperado al actualizar el resaltado"
 }
