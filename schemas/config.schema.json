@@ -108,7 +108,7 @@
 		},
 		"codeMarkPlus.author": {
 			"type": "string",
-			"default": "John Doe",
+			"default": "Unknown",
 			"scope": "resource",
 			"description": "The author's name for the comment."
 		},
@@ -137,11 +137,11 @@
 				"properties": {
 					"keyword": {
 						"type": "string",
-						"description": "The keyword to highlight."
+						"description": "The keyword to highlight. Used when matchMode is 'word' or 'substring'. By default, matches require a trailing colon after the keyword (e.g., 'TODO:'). If the keyword itself already includes a colon, it is respected. Use 'regex' with 'pattern' to customize separators."
 					},
 					"color": {
 						"type": "string",
-						"description": "The"
+						"description": "The background color used for the highlight (e.g., 'rgba(255,204,0,0.3)')."
 					},
 					"bold": {
 						"type": "boolean",
@@ -154,9 +154,58 @@
 					"underline": {
 						"type": "boolean",
 						"description": "The text style for underlined keywords."
+					},
+					"matchMode": {
+						"type": "string",
+						"enum": [
+							"word",
+							"substring",
+							"regex"
+						],
+						"description": "Specifies the matching strategy. \n- 'word': Matches the exact keyword as a whole word (default for backward compatibility). \n- 'substring': Matches the keyword as part of a larger string. \n- 'regex': Uses the 'pattern' property for matching. \n\nNote: For 'word' and 'substring' with a 'keyword', a trailing colon after the keyword is required unless the keyword already contains ':'."
+					},
+					"pattern": {
+						"type": "string",
+						"description": "A valid JavaScript regular expression pattern to use when matchMode is 'regex'. Do not include leading/trailing slashes. Example: 'TASK\\s*\\(\\d+\\)'."
+					},
+					"caseSensitive": {
+						"type": "boolean",
+						"description": "Whether matching is case-sensitive. Defaults to true. Set to false to perform case-insensitive matching. Applies to both 'keyword' and 'pattern' modes."
+					},
+					"wholeWord": {
+						"type": "boolean",
+						"description": "When true, ensures the match does not occur inside another word. It is implicitly true for 'word' mode and can be used to constrain 'substring' mode."
+					},
+					"languageIds": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						},
+						"description": "Array of VS Code language identifiers to which this rule applies. If empty or omitted, the rule is global. Example: ['typescript', 'javascript']."
+					},
+					"strikethrough": {
+						"type": "boolean",
+						"description": "When true, applies a strikethrough style to the highlighted text."
+					},
+					"priority": {
+						"type": "number",
+						"description": "A number that determines precedence when rules overlap. Higher values are applied on top of lower ones. Default is 0."
 					}
 				},
-				"required": ["keyword", "color"]
+				"anyOf": [
+					{
+						"required": [
+							"keyword",
+							"color"
+						]
+					},
+					{
+						"required": [
+							"pattern",
+							"color"
+						]
+					}
+				]
 			},
 			"default": [
 				{
@@ -177,7 +226,7 @@
 				}
 			],
 			"scope": "resource",
-			"description": "List of highlight rules for keywords. Each rule must define a keyword, a background color, and optionally text styles."
+			"description": "Defines rules for highlighting text. Each rule must specify what to find and a color.\n\nNote: When using 'keyword' with 'word' or 'substring', the keyword must be followed by a colon in the source text (e.g., 'TODO:'). If you need other separators, use 'regex' with 'pattern'.\n\n**Examples:**\n\n*Legacy (whole word, case-sensitive by default):*\n`{ \"keyword\": \"TODO\", \"color\": \"rgba(255,204,0,0.3)\" }` (matches 'TODO:' in text)\n\n*Substring (case-sensitive):*\n`{ \"keyword\": \"ref\", \"color\": \"#c586c0\", \"matchMode\": \"substring\", \"caseSensitive\": true }` (matches 'ref:' in text)\n\n*Regex (for a specific language):*\n`{ \"pattern\": \"@custom\\\\w*\", \"color\": \"#6796e6\", \"matchMode\": \"regex\", \"languageIds\": [\"typescript\"] }`"
 		},
 		"codeMarkPlus.specialHighlightDecoration": {
 			"type": "object",
@@ -186,6 +235,7 @@
 				"border": "1px solid blue",
 				"isWholeLine": true
 			},
+			"scope": "resource",
 			"description": "Configuration for the decoration applied to special highlight directives (e.g., 'HIGHLIGHT: next line')."
 		},
 		"codeMarkPlus.customTemplates": {
@@ -205,7 +255,14 @@
 							"python",
 							"cpp",
 							"ruby",
-							"go"
+							"go",
+							"kotlin",
+							"swift",
+							"scala",
+							"lua",
+							"perl",
+							"elixir",
+							"haskell"
 						],
 						"enumDescriptions": [
 							"JavaScript",
@@ -217,20 +274,216 @@
 							"Python",
 							"C++",
 							"Ruby",
-							"Go"
+							"Go",
+							"Kotlin",
+							"Swift",
+							"Scala",
+							"Lua",
+							"Perl",
+							"Elixir",
+							"Haskell"
 						],
 						"description": "The programming language for which this template applies (e.g., 'javascript', 'python', 'dart')."
 					},
 					"template": {
 						"type": "array",
-						"description": "The comment message template. Use variables like {{{commentMessagePrefix}}}, {{{commentMessageSuffix}}, etc. Example: \"// {{{commentMessagePrefix}}} {{{fileName}}} {{{commentMessageSuffix}}\""
+						"description": "The comment message template. Use variables like {{{commentMessagePrefix}}}, {{{commentMessageSuffix}}}, etc. Example: \"// {{{commentMessagePrefix}}} {{{fileName}}} {{{commentMessageSuffix}}}\""
 					}
 				},
-				"required": ["language", "template"]
+				"required": [
+					"language",
+					"template"
+				]
 			},
 			"default": [],
 			"scope": "resource",
-			"description": "Custom comment message templates for different languages. You can define a template per language using available variables (e.g., {{{commentMessagePrefix}}}, {{{commentMessageSuffix}}, {{{fileName}}, {{{author}})."
+			"description": "Custom comment message templates for different languages. You can define a template per language using available variables (e.g., {{{commentMessagePrefix}}}, {{{commentMessageSuffix}}}, {{{fileName}}}, {{{author}}})."
+		},
+		"codeMarkPlus.files.includedFilePatterns": {
+			"type": "array",
+			"items": {
+				"type": "string"
+			},
+			"default": [
+				"**/*"
+			],
+			"scope": "resource",
+			"description": "Glob patterns of files to include when searching (e.g., ['**/*'])."
+		},
+		"codeMarkPlus.files.excludedFilePatterns": {
+			"type": "array",
+			"items": {
+				"type": "string"
+			},
+			"default": [
+				"**/node_modules/**",
+				"**/.git/**",
+				"**/dist/**",
+				"**/build/**"
+			],
+			"scope": "resource",
+			"description": "Glob patterns of files and folders to exclude from searches (e.g., ['**/node_modules/**','**/.git/**'])."
+		},
+		"codeMarkPlus.files.maxSearchRecursionDepth": {
+			"type": "number",
+			"default": 0,
+			"scope": "resource",
+			"description": "Maximum directory depth for recursive search (0 = unlimited)."
+		},
+		"codeMarkPlus.files.supportsHiddenFiles": {
+			"type": "boolean",
+			"default": false,
+			"scope": "resource",
+			"description": "Include dotfiles and hidden files (those starting with a dot) in search results."
+		},
+		"codeMarkPlus.files.preserveGitignoreSettings": {
+			"type": "boolean",
+			"default": true,
+			"scope": "resource",
+			"description": "Respect .gitignore rules when searching for files."
+		},
+		"codeMarkPlus.files.showFilePathInResults": {
+			"type": "boolean",
+			"default": true,
+			"scope": "resource",
+			"description": "Show the relative folder path next to each file in results."
+		},
+		"codeMarkPlus.performance.maxFilesToIndex": {
+			"type": "number",
+			"default": 1000,
+			"minimum": 1,
+			"scope": "resource",
+			"description": "Maximum number of files to scan for tags per workspace to cap indexing time."
+		},
+		"codeMarkPlus.performance.concurrencyLimit": {
+			"type": "number",
+			"default": 10,
+			"minimum": 1,
+			"scope": "resource",
+			"description": "Maximum number of files processed concurrently during indexing."
+		},
+		"codeMarkPlus.performance.batchSize": {
+			"type": "number",
+			"default": 10,
+			"minimum": 1,
+			"scope": "resource",
+			"description": "Number of files to process per batch before yielding to keep the UI responsive."
+		},
+		"codeMarkPlus.tags.tagProfiles": {
+			"type": "object",
+			"default": {},
+			"scope": "resource",
+			"description": "Map of tag profiles to customize priority, icon, and color per tag (e.g., { \"TODO\": { \"priority\": 10, \"icon\": \"$(tag)\", \"color\": \"#ffcc00\" } }).",
+			"additionalProperties": {
+				"type": "object",
+				"properties": {
+					"priority": {
+						"type": "number",
+						"description": "Priority used for sorting and resolving conflicts. Higher values indicate more important tags."
+					},
+					"icon": {
+						"type": "string",
+						"description": "Codicon name (e.g., $(tag)) or emoji to display for this tag in the Tag Browser."
+					},
+					"color": {
+						"type": "string",
+						"description": "Color for this tag (hex like #RRGGBB or rgba())."
+					}
+				},
+				"required": [
+					"priority"
+				]
+			}
+		},
+		"codeMarkPlus.notes.notesFolder": {
+			"type": "string",
+			"default": ".codemark",
+			"scope": "resource",
+			"description": "Folder (relative to the workspace) where CodeMark+ stores notes and generated files."
+		},
+		"codeMarkPlus.notes.createDefaultFiles": {
+			"type": "boolean",
+			"default": true,
+			"scope": "resource",
+			"description": "Create default note files (TODO and Scratchpad) inside the notes folder."
+		},
+		"codeMarkPlus.notes.todoFileName": {
+			"type": "string",
+			"default": "(TODO).md",
+			"scope": "resource",
+			"description": "File name for the default TODO notes file."
+		},
+		"codeMarkPlus.notes.scratchpadFileName": {
+			"type": "string",
+			"default": "(Scratchpad).md",
+			"scope": "resource",
+			"description": "File name for the default Scratchpad notes file."
+		},
+		"codeMarkPlus.features.quickActions": {
+			"type": "array",
+			"default": [],
+			"scope": "resource",
+			"description": "User-defined quick actions that run VS Code commands with optional arguments and UI metadata.",
+			"items": {
+				"type": "object",
+				"properties": {
+					"name": {
+						"type": "string",
+						"description": "Display name of the quick action."
+					},
+					"command": {
+						"type": "string",
+						"description": "VS Code command ID to execute."
+					},
+					"args": {
+						"type": "array",
+						"description": "Optional array of arguments to pass to the command."
+					},
+					"shortcut": {
+						"type": "string",
+						"description": "Optional description of a keyboard shortcut for this action."
+					},
+					"icon": {
+						"type": "string",
+						"description": "Optional Codicon name (e.g., $(tag)) or emoji to show for the action."
+					}
+				},
+				"required": [
+					"name",
+					"command"
+				]
+			}
+		},
+		"codeMarkPlus.tags.tagPriorities": {
+			"type": "array",
+			"default": [],
+			"scope": "resource",
+			"description": "List of tag priority overrides with optional color and icon metadata.",
+			"items": {
+				"type": "object",
+				"properties": {
+					"tag": {
+						"type": "string",
+						"description": "Tag text to match (e.g., TODO, FIXME)."
+					},
+					"priority": {
+						"type": "number",
+						"description": "Priority used for sorting and resolving conflicts. Higher values indicate more important tags."
+					},
+					"color": {
+						"type": "string",
+						"description": "Optional color for this tag (hex like #RRGGBB or rgba())."
+					},
+					"icon": {
+						"type": "string",
+						"description": "Optional Codicon name (e.g., $(tag)) or emoji to display for this tag."
+					}
+				},
+				"required": [
+					"tag",
+					"priority"
+				]
+			}
 		}
 	}
 }

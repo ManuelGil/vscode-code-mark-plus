@@ -1,5 +1,6 @@
-import * as mustache from 'mustache';
+import mustache from 'mustache';
 import { ExtensionConfig } from '../configs';
+import { getLineCommentToken } from '../helpers/line-comment-token.helper';
 import { CommentData } from '../types';
 
 /**
@@ -475,74 +476,79 @@ export class CommentService {
    * @returns {string} - The comment snippet
    */
   generateCommentSnippet(data: CommentData): string {
-    const {
-      defaultLanguage,
-      customTemplates,
-      isCommentMessageWrapped,
-      addEmptyLineBeforeComment,
-      addEmptyLineAfterComment,
-    } = this.config;
+    try {
+      const {
+        defaultLanguage,
+        customTemplates,
+        isCommentMessageWrapped,
+        addEmptyLineBeforeComment,
+        addEmptyLineAfterComment,
+      } = this.config;
 
-    const languageId = data.languageId || '';
-    const supportedLanguages = [
-      'javascript',
-      'typescript',
-      'java',
-      'csharp',
-      'php',
-      'dart',
-      'python',
-      'cpp',
-      'ruby',
-      'go',
-      'kotlin',
-      'swift',
-      'scala',
-      'lua',
-      'perl',
-      'elixir',
-      'haskell',
-    ];
-
-    const language = supportedLanguages.includes(languageId)
-      ? languageId
-      : defaultLanguage;
-
-    const customTemplate = customTemplates.find(
-      (template) => template.language === language,
-    );
-
-    const defaultTemplate = this.defaultTemplates.find(
-      (template) => template.language === language,
-    );
-
-    const singleLineComment =
-      this.defaultSingleLineComment[
-        language as keyof typeof this.defaultSingleLineComment
+      const languageId = data.languageId || '';
+      const supportedLanguages = [
+        'javascript',
+        'typescript',
+        'java',
+        'csharp',
+        'php',
+        'dart',
+        'python',
+        'cpp',
+        'ruby',
+        'go',
+        'kotlin',
+        'swift',
+        'scala',
+        'lua',
+        'perl',
+        'elixir',
+        'haskell',
       ];
 
-    let content: string | undefined =
-      customTemplate?.template?.join('\n') ||
-      defaultTemplate?.template?.join('\n');
+      const language = supportedLanguages.includes(languageId)
+        ? languageId
+        : defaultLanguage;
 
-    if (!content) {
-      return `${data.indent}${singleLineComment} The ${data.functionName} method`;
+      const customTemplate = customTemplates.find(
+        (template) => template.language === language,
+      );
+
+      const defaultTemplate = this.defaultTemplates.find(
+        (template) => template.language === language,
+      );
+
+      const singleLineComment =
+        this.defaultSingleLineComment[
+          language as keyof typeof this.defaultSingleLineComment
+        ];
+
+      let content: string | undefined =
+        customTemplate?.template?.join('\n') ||
+        defaultTemplate?.template?.join('\n');
+
+      if (!content) {
+        return `${data.indent}${singleLineComment} The ${data.functionName} method`;
+      }
+
+      if (!content.endsWith('\n')) {
+        content += '\n';
+      }
+
+      content = this.wrapContent(
+        content,
+        data.indent,
+        singleLineComment,
+        isCommentMessageWrapped,
+        addEmptyLineBeforeComment,
+        addEmptyLineAfterComment,
+      );
+
+      return mustache.render(content, data);
+    } catch (error) {
+      console.error('Error generating comment snippet:', error);
+      return `${data.indent}// Error: Unable to generate comment for ${data.functionName}`;
     }
-
-    if (!content.endsWith('\n')) {
-      content += '\n';
-    }
-
-    content = this.wrapContent(
-      content,
-      data.indent,
-      singleLineComment,
-      isCommentMessageWrapped,
-      addEmptyLineBeforeComment,
-      addEmptyLineAfterComment,
-    );
-
-    return mustache.render(content, data);
   }
 
   /**
@@ -555,6 +561,7 @@ export class CommentService {
    * this.commentService.findSingleLineComments(code);
    *
    * @param {string} code - The code to search for single line comments
+   * @param {string} [languageId] - VS Code document language id (drives comment marker)
    *
    * @returns {Array<{
    *   start: number;
@@ -564,41 +571,52 @@ export class CommentService {
    *   fullText: string;
    * }>} - The array of single line comments
    */
-  findSingleLineComments(code: string): Array<{
+  findSingleLineComments(
+    code: string,
+    languageId?: string,
+  ): Array<{
     start: number;
     end: number;
     line: number;
     preview: string;
     fullText: string;
   }> {
-    // Por defecto se asume el lenguaje; este método podría ampliarse para usar la configuración.
-    const marker = this.defaultSingleLineComment['javascript'] || '//';
-    const escapedMarker = marker.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-    const markerPattern = new RegExp(`${escapedMarker}.*$`, 'gm');
+    try {
+      const marker = getLineCommentToken(languageId ?? '');
+      const escapedMarker = marker.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+      const markerPattern = new RegExp(`${escapedMarker}.*$`, 'gm');
 
-    const commentRanges: Array<{
-      start: number;
-      end: number;
-      line: number;
-      preview: string;
-      fullText: string;
-    }> = [];
+      const commentRanges: Array<{
+        start: number;
+        end: number;
+        line: number;
+        preview: string;
+        fullText: string;
+      }> = [];
 
-    let match: RegExpExecArray | null;
-    while ((match = markerPattern.exec(code)) !== null) {
-      const start = match.index;
-      const newlineIndex = code.indexOf('\n', start);
-      const end = newlineIndex === -1 ? code.length : newlineIndex;
-      const line = code.slice(0, start).split('\n').length;
-      const preview =
-        code
-          .slice(start, start + 20)
-          .replace(/\n/g, '')
-          .trim() + '... ';
-      const fullText = code.slice(start, end).trim();
-      commentRanges.push({ start, end, line, preview, fullText });
+      let match: RegExpExecArray | null;
+      while ((match = markerPattern.exec(code)) !== null) {
+        const start = match.index;
+        const newlineIndex = code.indexOf('\n', start);
+        const end = newlineIndex === -1 ? code.length : newlineIndex;
+        const line = code.slice(0, start).split('\n').length;
+        const preview =
+          code
+            .slice(start, start + 20)
+            .replace(/\n/g, '')
+            .trim() + '... ';
+        const fullText = code.slice(start, end).trim();
+        commentRanges.push({ start, end, line, preview, fullText });
+        if (match[0].length === 0) {
+          // Zero-length safeguard to prevent potential infinite loops
+          markerPattern.lastIndex++;
+        }
+      }
+      return commentRanges;
+    } catch (error) {
+      console.error('Error finding single line comments:', error);
+      return [];
     }
-    return commentRanges;
   }
 
   // Private methods

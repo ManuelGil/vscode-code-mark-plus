@@ -3,7 +3,10 @@
 		"module": "NodeNext",
 		"target": "ES2022",
 		"outDir": "out",
-		"lib": ["ES2022"],
+		"lib": [
+			"ES2022",
+			"DOM"
+		],
 		"sourceMap": true,
 		"rootDir": "src",
 		"strict": true /* enable all strict type-checking options */,
@@ -15,6 +18,11 @@
 		"esModuleInterop": true /* Enables emit interoperability between CommonJS and ES Modules. */,
 		"forceConsistentCasingInFileNames": true /* Disallow inconsistently-cased references to the same file. */
 	},
-	"include": ["src/**/*"],
-	"exclude": ["node_modules", ".vscode-test"]
+	"include": [
+		"src/**/*"
+	],
+	"exclude": [
+		"node_modules",
+		".vscode-test"
+	]
 }

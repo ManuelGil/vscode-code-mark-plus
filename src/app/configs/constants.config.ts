@@ -1,3 +1,4 @@
+import { DecorationRenderOptions } from 'vscode';
 import { CommentTemplate, HighlightRule } from '../types';
 
 /**
@@ -37,6 +38,16 @@ export const EXTENSION_NAME: string = 'vscode-code-mark-plus';
 export const EXTENSION_DISPLAY_NAME: string = 'CodeMark+';
 
 /**
+ * USER_NAME: The ManuelGil of the extension.
+ * @type {string}
+ * console.log(USER_NAME);
+ *
+ * @returns {string} - The ManuelGil of the extension
+ * @category Config
+ */
+export const USER_NAME: string = 'ManuelGil';
+
+/**
  * USER_PUBLISHER: The publisher of the extension.
  * @type {string}
  * @public
@@ -47,6 +58,16 @@ export const EXTENSION_DISPLAY_NAME: string = 'CodeMark+';
  * @returns {string} - The publisher of the extension
  */
 export const USER_PUBLISHER: string = 'imgildev';
+
+/**
+ * REPOSITORY_URL: The documentation URL of the extension.
+ * @type {string}
+ * console.log(REPOSITORY_URL);
+ *
+ * @returns {string} - The documentation URL of the extension
+ * @category Config
+ */
+export const REPOSITORY_URL: string = `https://github.com/${USER_NAME}/${EXTENSION_NAME}`;
 
 /**
  * DEFAULT_ENABLE_SETTING: The default value for the enable setting.
@@ -251,15 +272,15 @@ export const DEFAULT_HIGHLIGHT_RULES: HighlightRule[] = [
 
 /**
  * DEFAULT_SPECIAL_HIGHLIGHT_DECORATION: The default value for the special highlight decoration setting.
- * @type {HighlightRule}
+ * @type {DecorationRenderOptions}
  * @public
  * @memberof Constants
  * @example
  * console.log(DEFAULT_SPECIAL_HIGHLIGHT_DECORATION);
  *
- * @returns {HighlightRule} - The default value for the special highlight decoration setting
+ * @returns {DecorationRenderOptions} - The default value for the special highlight decoration setting
  */
-export const DEFAULT_SPECIAL_HIGHLIGHT_DECORATION: Object = {
+export const DEFAULT_SPECIAL_HIGHLIGHT_DECORATION: DecorationRenderOptions = {
   'backgroundColor': 'rgba(0,128,255,0.3)',
   'border': '1px solid blue',
   'isWholeLine': true,
@@ -276,3 +297,111 @@ export const DEFAULT_SPECIAL_HIGHLIGHT_DECORATION: Object = {
  * @returns {string[]} - The default value for the custom comment templates setting
  */
 export const DEFAULT_CUSTOM_COMMENT_TEMPLATES: CommentTemplate[] = [];
+
+/**
+ * DEFAULT_INCLUDED_FILE_PATTERNS: Default glob patterns for files to include.
+ */
+export const DEFAULT_INCLUDED_FILE_PATTERNS: string[] = ['**/*{js,ts,md}'];
+
+/**
+ * DEFAULT_EXCLUDED_FILE_PATTERNS: Default glob patterns for files to exclude.
+ */
+export const DEFAULT_EXCLUDED_FILE_PATTERNS: string[] = [
+  '**/node_modules/**',
+  '**/.git/**',
+  '**/dist/**',
+  '**/build/**',
+];
+
+/**
+ * DEFAULT_MAX_SEARCH_RECURSION_DEPTH: Default maximum recursion depth for file search.
+ */
+export const DEFAULT_MAX_SEARCH_RECURSION_DEPTH: number = 0;
+
+/**
+ * DEFAULT_SUPPORTS_HIDDEN_FILES: Default setting for including hidden files.
+ */
+export const DEFAULT_SUPPORTS_HIDDEN_FILES: boolean = false;
+
+/**
+ * DEFAULT_PRESERVE_GITIGNORE_SETTINGS: Default setting for respecting .gitignore.
+ */
+export const DEFAULT_PRESERVE_GITIGNORE_SETTINGS: boolean = true;
+
+/**
+ * DEFAULT_SHOW_FILE_PATH_IN_RESULTS: Default setting for showing file paths in results.
+ */
+export const DEFAULT_SHOW_FILE_PATH_IN_RESULTS: boolean = true;
+
+/**
+ * DEFAULT_NOTES_FOLDER: The default folder name for project notes.
+ */
+export const DEFAULT_NOTES_FOLDER: string = '.codemark';
+
+/**
+ * DEFAULT_CREATE_DEFAULT_FILES_SETTING: Whether to create default notes files automatically.
+ */
+export const DEFAULT_CREATE_DEFAULT_FILES_SETTING: boolean = true;
+
+/**
+ * DEFAULT_TODO_FILE_NAME: Default filename for project TODO list.
+ */
+export const DEFAULT_TODO_FILE_NAME: string = '(TODO).md';
+
+/**
+ * DEFAULT_SCRATCHPAD_FILE_NAME: Default filename for project scratchpad.
+ */
+export const DEFAULT_SCRATCHPAD_FILE_NAME: string = '(Scratchpad).md';
+
+/**
+ * DEFAULT_EXCLUDE_GLOBS: Default glob patterns to exclude from indexing.
+ */
+export const DEFAULT_EXCLUDE_GLOBS: string[] = [
+  '**/node_modules/**',
+  '**/.git/**',
+];
+
+/**
+ * DEFAULT_TAG_PROFILES: Default tag profiles mapping.
+ */
+export const DEFAULT_TAG_PROFILES: Record<
+  string,
+  { priority: number; icon?: string; color?: string }
+> = {};
+
+/**
+ * DEFAULT_MAX_FILES_TO_INDEX: Default maximum number of files to index.
+ */
+export const DEFAULT_MAX_FILES_TO_INDEX: number = 1000;
+
+/**
+ * DEFAULT_CONCURRENCY_LIMIT: Default maximum number of files to process concurrently during indexing.
+ */
+export const DEFAULT_CONCURRENCY_LIMIT: number = 10;
+
+/**
+ * DEFAULT_BATCH_SIZE: Default number of files to process in each batch during indexing.
+ */
+export const DEFAULT_BATCH_SIZE: number = 10;
+
+/**
+ * TAG_BROWSER_MAX_FILE_SIZE_BYTES: Internal cap to skip scanning very large files.
+ * Not user-configurable; chosen conservatively to protect responsiveness.
+ */
+export const TAG_BROWSER_MAX_FILE_SIZE_BYTES: number = 1 * 1024 * 1024; // 1MB
+
+/**
+ * TAG_BROWSER_MAX_OCCURRENCES_PER_FILE: Internal cap to limit total matches collected per file.
+ * Not user-configurable; prevents UI lag from extremely repetitive content.
+ */
+export const TAG_BROWSER_MAX_OCCURRENCES_PER_FILE: number = 150;
+
+/**
+ * TAG_BROWSER_MAX_ENTRIES_PER_TAG: Internal cap to limit number of entries per tag across the whole tree build.
+ */
+export const TAG_BROWSER_MAX_ENTRIES_PER_TAG: number = 300;
+
+/**
+ * TAG_BROWSER_MAX_TOTAL_ENTRIES: Internal cap to limit total entries across the whole tree build.
+ */
+export const TAG_BROWSER_MAX_TOTAL_ENTRIES: number = 2000;

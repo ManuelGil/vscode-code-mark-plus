@@ -4,7 +4,7 @@
  *
  * @function escapeRegExp
  * @private
- * @memberof HighlightController
+ * @memberof Helpers
  * @example
  * const escaped = escapeRegExp(input);
  *

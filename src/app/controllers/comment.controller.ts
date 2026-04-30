@@ -1,15 +1,16 @@
 import {
+  commands,
   DocumentSymbol,
+  l10n,
   Position,
   Range,
   SymbolKind,
   TextEditor,
-  commands,
-  l10n,
+  Uri,
   window,
-  workspace,
 } from 'vscode';
 
+import { relativePath } from '../helpers';
 import { CommentService } from '../services';
 import { CommentData } from '../types';
 
@@ -112,7 +113,12 @@ export class CommentController {
 
       const docComment = await this.service.generateCommentSnippet({
         indent: indent,
-        fileName: workspace.asRelativePath(fileName),
+        languageId: document.languageId,
+        fileName: await relativePath(
+          Uri.file(fileName),
+          false,
+          this.service.config,
+        ),
         functionName: functionInfo?.name || 'Unknown',
         signature: functionInfo?.signature || 'N/A',
         modifiers: functionInfo?.modifiers || 'N/A',
@@ -158,14 +164,17 @@ export class CommentController {
 
       const documentText = editor.document.getText();
 
-      const comments = this.service.findSingleLineComments(documentText);
+      const comments = this.service.findSingleLineComments(
+        documentText,
+        editor.document.languageId,
+      );
       if (comments.length === 0) {
         window.showInformationMessage(l10n.t('No comments found for removal'));
         return;
       }
 
       const picks = comments.map((comment) => ({
-        label: `Line ${comment.line}: ${comment.preview}`,
+        label: l10n.t('Line {0}: {1}', String(comment.line), comment.preview),
         description: comment.fullText,
         comment,
       }));
@@ -182,7 +191,10 @@ export class CommentController {
       }
 
       await editor.edit((editBuilder) => {
-        const sorted = selected.sort((a, b) => b.comment.line - a.comment.line);
+        const sorted = selected.sort(
+          (leftPick, rightPick) =>
+            rightPick.comment.line - leftPick.comment.line,
+        );
         sorted.forEach((item) => {
           const startPos = editor.document.positionAt(item.comment.start);
           const endPos = editor.document.positionAt(item.comment.end);
@@ -209,6 +221,74 @@ export class CommentController {
       console.error('Error removing comments:', error);
       window.showErrorMessage(
         l10n.t('An unexpected error occurred while removing comments'),
+      );
+    }
+  }
+
+  /**
+   * The removeAllSingleLineComments method.
+   * Remove all detected single-line comments from the active text editor without prompting.
+   * @function removeAllSingleLineComments
+   * @public
+   * @async
+   * @memberof CommentController
+   * @example
+   * controller.removeAllSingleLineComments();
+   *
+   * @returns {Promise<void>} - The promise with no return value
+   */
+  async removeAllSingleLineComments(): Promise<void> {
+    try {
+      const editor = window.activeTextEditor;
+
+      if (!editor) {
+        window.showErrorMessage(l10n.t('No active editor available!'));
+        return;
+      }
+
+      const documentText = editor.document.getText();
+      const comments = this.service.findSingleLineComments(
+        documentText,
+        editor.document.languageId,
+      );
+
+      if (comments.length === 0) {
+        window.showInformationMessage(l10n.t('No comments found for removal'));
+        return;
+      }
+
+      await editor.edit((editBuilder) => {
+        // Sort descending to avoid shifting offsets as we delete
+        const sorted = comments.sort(
+          (leftComment, rightComment) => rightComment.start - leftComment.start,
+        );
+        sorted.forEach((comment) => {
+          const startPos = editor.document.positionAt(comment.start);
+          const endPos = editor.document.positionAt(comment.end);
+
+          const line = editor.document.lineAt(startPos.line);
+          const lineText = line.text.trim();
+          const commentText = editor.document
+            .getText(new Range(startPos, endPos))
+            .trim();
+
+          if (lineText === commentText) {
+            // Entire line is a comment: remove the whole line including its line break
+            editBuilder.delete(line.rangeIncludingLineBreak);
+          } else {
+            // Remove only the comment section
+            editBuilder.delete(new Range(startPos, endPos));
+          }
+        });
+      });
+
+      window.showInformationMessage(
+        l10n.t('All single-line comments have been removed'),
+      );
+    } catch (error) {
+      console.error('Error removing all comments:', error);
+      window.showErrorMessage(
+        l10n.t('An unexpected error occurred while removing all comments'),
       );
     }
   }
