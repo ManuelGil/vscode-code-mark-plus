@@ -2,11 +2,15 @@
 	"name": "vscode-code-mark-plus",
 	"displayName": "CodeMark+ - Custom Comment Manager for Any Language",
 	"description": "CodeMark+ is a VS Code extension that turbocharges your in-code documentation by automating comment insertion, removal, highlighting, and navigation across any programming language. Add custom markers, perform bulk comment operations, explore comments in a dedicated tree-view, and streamline your review workflow-all in one developer-friendly tool.",
-	"version": "1.4.0",
+	"version": "1.5.0",
 	"icon": "icon.png",
 	"license": "MIT",
 	"publisher": "imgildev",
-	"author": "ManuelGil",
+	"author": {
+		"name": "Manuel Gil",
+		"email": "support@imgil.dev",
+		"url": "https://imgil.dev/"
+	},
 	"sponsor": {
 		"url": "https://github.com/sponsors/ManuelGil"
 	},
@@ -232,7 +236,7 @@
 				},
 				"codeMarkPlus.highlightActive": {
 					"type": "boolean",
-					"default": true,
+					"default": false,
 					"scope": "resource",
 					"description": "%codeMarkPlus.highlightActive.description%"
 				},
@@ -503,7 +507,7 @@
 				},
 				"codeMarkPlus.notes.createDefaultFiles": {
 					"type": "boolean",
-					"default": true,
+					"default": false,
 					"scope": "resource",
 					"description": "%codeMarkPlus.notes.createDefaultFiles.description%"
 				},
@@ -591,44 +595,44 @@
 			{
 				"command": "codeMarkPlus.insertComment",
 				"title": "%codeMarkPlus.insertComment.title%",
-				"category": "codeMark+"
+				"category": "CodeMark+"
 			},
 			{
 				"command": "codeMarkPlus.removeSingleLineComments",
 				"title": "%codeMarkPlus.removeSingleLineComments.title%",
-				"category": "codeMark+"
+				"category": "CodeMark+"
 			},
 			{
 				"command": "codeMarkPlus.removeAllSingleLineComments",
 				"title": "%codeMarkPlus.removeAllSingleLineComments.title%",
-				"category": "codeMark+"
+				"category": "CodeMark+"
 			},
 			{
 				"command": "codeMarkPlus.changeWorkspace",
 				"title": "%codeMarkPlus.changeWorkspace.title%",
-				"category": "codeMark+"
+				"category": "CodeMark+"
 			},
 			{
 				"command": "codeMarkPlus.tagBrowserView.refreshList",
 				"title": "%codeMarkPlus.tagBrowserView.refreshList.title%",
-				"category": "codeMark+",
+				"category": "CodeMark+",
 				"icon": "$(refresh)"
 			},
 			{
 				"command": "codeMarkPlus.tagBrowserView.openFile",
 				"title": "%codeMarkPlus.tagBrowserView.openFile.title%",
-				"category": "codeMark+",
+				"category": "CodeMark+",
 				"icon": "$(go-to-file)"
 			},
 			{
 				"command": "codeMarkPlus.appendToTodoFile",
 				"title": "%codeMarkPlus.appendToTodoFile.title%",
-				"category": "codeMark+"
+				"category": "CodeMark+"
 			},
 			{
 				"command": "codeMarkPlus.openTodoFile",
 				"title": "%codeMarkPlus.openTodoFile.title%",
-				"category": "codeMark+"
+				"category": "CodeMark+"
 			}
 		],
 		"menus": {

@@ -25,7 +25,6 @@ import {
   toPosixPath,
 } from '../helpers';
 import { NodeModel } from '../models';
-import { TagIndexService } from '../services';
 
 /**
  * The TagBrowserController class.
@@ -47,34 +46,7 @@ export class TagBrowserController {
   // Constructor
   // -----------------------------------------------------------------
 
-  /**
-   * Constructor for the TagBrowserController class
-   *
-   * @constructor
-   * @param {ExtensionConfig} config - The configuration object containing user preferences
-   * @public
-   * @memberof TagBrowserController
-   * @example
-   * const controller = new TagBrowserController(config);
-   *
-   * @returns {TagBrowserController} - A new instance of TagBrowserController
-   */
-  private tagIndexService: TagIndexService | undefined;
-
   constructor(readonly config: ExtensionConfig) {}
-
-  /**
-   * Sets the tag index service and triggers the initial workspace scan.
-   * @param {TagIndexService} service - The singleton instance of the TagIndexService.
-   * @memberof TagBrowserController
-   */
-  public setTagIndexService(service: TagIndexService): void {
-    this.tagIndexService = service;
-    // Defer the initial scan to avoid blocking activation
-    setTimeout(() => {
-      this.tagIndexService?.scanWorkspace();
-    }, 100);
-  }
 
   // -----------------------------------------------------------------
   // Methods

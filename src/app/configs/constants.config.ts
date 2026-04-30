@@ -247,7 +247,7 @@ export const DEFAULT_LICENSE_SETTING: string = 'MIT';
  *
  * @returns {boolean} - The default value for the highlight active setting
  */
-export const DEFAULT_HIGHLIGHT_ACTIVE_SETTING: boolean = true;
+export const DEFAULT_HIGHLIGHT_ACTIVE_SETTING: boolean = false;
 
 /**
  * DEFAULT_HIGHLIGHT_RULES: The default value for the highlight rules setting.
@@ -341,7 +341,7 @@ export const DEFAULT_NOTES_FOLDER: string = '.codemark';
 /**
  * DEFAULT_CREATE_DEFAULT_FILES_SETTING: Whether to create default notes files automatically.
  */
-export const DEFAULT_CREATE_DEFAULT_FILES_SETTING: boolean = true;
+export const DEFAULT_CREATE_DEFAULT_FILES_SETTING: boolean = false;
 
 /**
  * DEFAULT_TODO_FILE_NAME: Default filename for project TODO list.

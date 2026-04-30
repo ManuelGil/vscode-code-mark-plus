@@ -1,9 +1,14 @@
 import {
   commands,
+  Disposable,
+  EventEmitter,
   ExtensionContext,
   env,
   l10n,
   MessageItem,
+  ProviderResult,
+  TreeDataProvider,
+  TreeItem,
   Uri,
   WorkspaceFolder,
   window,
@@ -29,6 +34,7 @@ import {
   TodoController,
 } from './app/controllers';
 import { debounce, showNoWorkspaceFolderError } from './app/helpers';
+import { NodeModel } from './app/models';
 import { TagBrowserProvider } from './app/providers';
 import { CommentService, TagIndexService, TodoService } from './app/services';
 
@@ -51,6 +57,7 @@ export class ExtensionRuntime {
   private tagBrowserProvider: TagBrowserProvider | undefined;
   private tagIndexService: TagIndexService | undefined;
   private highlightController: HighlightController | undefined;
+  private highlightListeners: Disposable[] = [];
 
   constructor(public readonly context: ExtensionContext) {}
 
@@ -77,43 +84,70 @@ export class ExtensionRuntime {
     this.registerCommentCommands();
     this.registerTagBrowserCommands();
     this.registerNoteCommands();
+    this.syncHighlightingState();
+  }
 
-    this.highlightController = new HighlightController(this.config);
+  private syncHighlightingState(): void {
+    if (!this.config.enable || !this.config.highlightActive) {
+      this.disableHighlighting();
+      return;
+    }
 
-    const updateHighlighting = () => {
-      const editor = window.activeTextEditor;
+    if (!this.highlightController) {
+      this.highlightController = new HighlightController(this.config);
+    }
 
-      if (editor) {
-        if (!this.isExtensionEnabled()) {
+    if (this.highlightListeners.length === 0) {
+      const updateHighlighting = () => {
+        const editor = window.activeTextEditor;
+
+        if (
+          !editor ||
+          !this.isExtensionEnabled() ||
+          !this.config.highlightActive
+        ) {
           return;
         }
 
-        if (this.config.highlightActive) {
-          this.highlightController?.updateHighlighting(editor);
-        } else {
-          this.highlightController?.clearHighlighting(editor);
-        }
+        this.highlightController?.updateHighlighting(editor);
+      };
+
+      const debouncedUpdate = debounce(updateHighlighting, 200);
+
+      this.highlightListeners.push(
+        window.onDidChangeActiveTextEditor(updateHighlighting),
+        workspace.onDidChangeTextDocument((event) => {
+          if (
+            window.activeTextEditor &&
+            event.document === window.activeTextEditor.document
+          ) {
+            debouncedUpdate();
+          }
+        }),
+      );
+
+      this.context.subscriptions.push(...this.highlightListeners);
+    }
+
+    const activeEditor = window.activeTextEditor;
+    if (activeEditor) {
+      this.highlightController.updateHighlighting(activeEditor);
+    }
+  }
+
+  private disableHighlighting(): void {
+    if (this.highlightListeners.length > 0) {
+      for (const listener of this.highlightListeners) {
+        listener.dispose();
       }
-    };
+      this.highlightListeners = [];
+    }
 
-    const debouncedUpdate = debounce(updateHighlighting, 200);
+    if (this.highlightController && window.activeTextEditor) {
+      this.highlightController.clearHighlighting(window.activeTextEditor);
+    }
 
-    this.context.subscriptions.push(
-      window.onDidChangeActiveTextEditor(updateHighlighting),
-    );
-
-    this.context.subscriptions.push(
-      workspace.onDidChangeTextDocument((event) => {
-        if (
-          window.activeTextEditor &&
-          event.document === window.activeTextEditor.document
-        ) {
-          debouncedUpdate();
-        }
-      }),
-    );
-
-    updateHighlighting();
+    this.highlightController = undefined;
   }
 
   /**
@@ -336,6 +370,7 @@ export class ExtensionRuntime {
         )
       ) {
         this.config.update(updatedWorkspaceConfig);
+        this.syncHighlightingState();
       }
     });
   }
@@ -451,16 +486,12 @@ export class ExtensionRuntime {
   }
 
   private registerTagBrowserCommands(): void {
-    this.tagBrowserController = new TagBrowserController(this.config);
-    this.tagIndexService = new TagIndexService(this.tagBrowserController);
-    this.tagBrowserController.setTagIndexService(this.tagIndexService);
-
-    this.tagBrowserProvider = new TagBrowserProvider(this.tagIndexService);
-    this.context.subscriptions.push(this.tagBrowserProvider);
+    const lazyTagBrowserProvider = this.createLazyTagBrowserProvider();
+    this.context.subscriptions.push(lazyTagBrowserProvider);
 
     this.context.subscriptions.push(
       window.createTreeView(ViewIds.TagBrowserView, {
-        treeDataProvider: this.tagBrowserProvider,
+        treeDataProvider: lazyTagBrowserProvider,
         showCollapseAll: true,
       }),
     );
@@ -472,9 +503,8 @@ export class ExtensionRuntime {
           return;
         }
 
-        this.tagBrowserProvider?.refresh();
-        this.tagIndexService?.clear();
-        await this.tagIndexService?.scanWorkspace();
+        this.getTagBrowserProvider().refresh();
+        await this.getTagIndexService().refreshWorkspace();
       },
     );
 
@@ -485,21 +515,17 @@ export class ExtensionRuntime {
           return;
         }
 
-        await this.tagBrowserController?.openFile(fileUri, lineNumber);
+        await this.getTagBrowserController().openFile(fileUri, lineNumber);
       },
     );
 
     this.context.subscriptions.push(
       disposableRefreshList,
       disposableOpenTagBrowserFile,
-      this.tagIndexService,
     );
   }
 
   private registerNoteCommands(): void {
-    this.todoService = new TodoService(this.config);
-    this.todoController = new TodoController(this.todoService);
-
     const noteCommands = [
       {
         id: CommandIds.AppendToTodoFile,
@@ -508,7 +534,7 @@ export class ExtensionRuntime {
             return;
           }
 
-          return this.todoController?.appendToTodoFile();
+          return this.getTodoController().appendToTodoFile();
         },
       },
       {
@@ -518,7 +544,7 @@ export class ExtensionRuntime {
             return;
           }
 
-          return this.todoController?.openTodoFile();
+          return this.getTodoController().openTodoFile();
         },
       },
     ];
@@ -531,5 +557,87 @@ export class ExtensionRuntime {
 
       this.context.subscriptions.push(disposable);
     });
+  }
+
+  private getTagBrowserController(): TagBrowserController {
+    if (!this.tagBrowserController) {
+      this.tagBrowserController = new TagBrowserController(this.config);
+    }
+
+    return this.tagBrowserController;
+  }
+
+  private getTagIndexService(): TagIndexService {
+    if (!this.tagIndexService) {
+      this.tagIndexService = new TagIndexService(
+        this.getTagBrowserController(),
+      );
+    }
+
+    return this.tagIndexService;
+  }
+
+  private getTagBrowserProvider(): TagBrowserProvider {
+    if (!this.tagBrowserProvider) {
+      this.tagBrowserProvider = new TagBrowserProvider(
+        this.getTagIndexService(),
+      );
+    }
+
+    return this.tagBrowserProvider;
+  }
+
+  private getTodoService(): TodoService {
+    if (!this.todoService) {
+      this.todoService = new TodoService(this.config);
+    }
+
+    return this.todoService;
+  }
+
+  private getTodoController(): TodoController {
+    if (!this.todoController) {
+      this.todoController = new TodoController(this.getTodoService());
+    }
+
+    return this.todoController;
+  }
+
+  private createLazyTagBrowserProvider(): TreeDataProvider<NodeModel> &
+    Disposable & { refresh(): void } {
+    const onDidChangeTreeDataEmitter = new EventEmitter<
+      NodeModel | undefined | null | void
+    >();
+    let innerProvider: TagBrowserProvider | undefined;
+    let providerListener: Disposable | undefined;
+
+    const ensureProvider = (): TagBrowserProvider => {
+      if (!innerProvider) {
+        innerProvider = this.getTagBrowserProvider();
+        providerListener = innerProvider.onDidChangeTreeData((event) => {
+          onDidChangeTreeDataEmitter.fire(event);
+        });
+        this.context.subscriptions.push(providerListener);
+        this.context.subscriptions.push(innerProvider);
+      }
+
+      return innerProvider;
+    };
+
+    return {
+      onDidChangeTreeData: onDidChangeTreeDataEmitter.event,
+      getTreeItem: (element: NodeModel): TreeItem | Thenable<TreeItem> =>
+        ensureProvider().getTreeItem(element),
+      getChildren: (element?: NodeModel): ProviderResult<NodeModel[]> =>
+        ensureProvider().getChildren(element),
+      refresh: (): void => {
+        ensureProvider().refresh();
+      },
+      dispose: (): void => {
+        providerListener?.dispose();
+        innerProvider?.dispose();
+        onDidChangeTreeDataEmitter.dispose();
+      },
+    };
   }
 }

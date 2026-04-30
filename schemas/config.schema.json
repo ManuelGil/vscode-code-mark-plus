@@ -126,7 +126,7 @@
 		},
 		"codeMarkPlus.highlightActive": {
 			"type": "boolean",
-			"default": true,
+			"default": false,
 			"scope": "resource",
 			"description": "Enable dynamic highlighting while the editor is active."
 		},
@@ -157,11 +157,7 @@
 					},
 					"matchMode": {
 						"type": "string",
-						"enum": [
-							"word",
-							"substring",
-							"regex"
-						],
+						"enum": ["word", "substring", "regex"],
 						"description": "Specifies the matching strategy. \n- 'word': Matches the exact keyword as a whole word (default for backward compatibility). \n- 'substring': Matches the keyword as part of a larger string. \n- 'regex': Uses the 'pattern' property for matching. \n\nNote: For 'word' and 'substring' with a 'keyword', a trailing colon after the keyword is required unless the keyword already contains ':'."
 					},
 					"pattern": {
@@ -194,16 +190,10 @@
 				},
 				"anyOf": [
 					{
-						"required": [
-							"keyword",
-							"color"
-						]
+						"required": ["keyword", "color"]
 					},
 					{
-						"required": [
-							"pattern",
-							"color"
-						]
+						"required": ["pattern", "color"]
 					}
 				]
 			},
@@ -290,10 +280,7 @@
 						"description": "The comment message template. Use variables like {{{commentMessagePrefix}}}, {{{commentMessageSuffix}}}, etc. Example: \"// {{{commentMessagePrefix}}} {{{fileName}}} {{{commentMessageSuffix}}}\""
 					}
 				},
-				"required": [
-					"language",
-					"template"
-				]
+				"required": ["language", "template"]
 			},
 			"default": [],
 			"scope": "resource",
@@ -304,9 +291,7 @@
 			"items": {
 				"type": "string"
 			},
-			"default": [
-				"**/*"
-			],
+			"default": ["**/*"],
 			"scope": "resource",
 			"description": "Glob patterns of files to include when searching (e.g., ['**/*'])."
 		},
@@ -390,9 +375,7 @@
 						"description": "Color for this tag (hex like #RRGGBB or rgba())."
 					}
 				},
-				"required": [
-					"priority"
-				]
+				"required": ["priority"]
 			}
 		},
 		"codeMarkPlus.notes.notesFolder": {
@@ -403,7 +386,7 @@
 		},
 		"codeMarkPlus.notes.createDefaultFiles": {
 			"type": "boolean",
-			"default": true,
+			"default": false,
 			"scope": "resource",
 			"description": "Create default note files (TODO and Scratchpad) inside the notes folder."
 		},
@@ -448,10 +431,7 @@
 						"description": "Optional Codicon name (e.g., $(tag)) or emoji to show for the action."
 					}
 				},
-				"required": [
-					"name",
-					"command"
-				]
+				"required": ["name", "command"]
 			}
 		},
 		"codeMarkPlus.tags.tagPriorities": {
@@ -479,10 +459,7 @@
 						"description": "Optional Codicon name (e.g., $(tag)) or emoji to display for this tag."
 					}
 				},
-				"required": [
-					"tag",
-					"priority"
-				]
+				"required": ["tag", "priority"]
 			}
 		}
 	}

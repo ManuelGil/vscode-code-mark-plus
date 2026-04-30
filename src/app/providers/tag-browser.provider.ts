@@ -84,13 +84,6 @@ export class TagBrowserProvider implements TreeDataProvider<NodeModel> {
    */
   private _version = 0;
 
-  /**
-   * Cache TTL for root nodes in milliseconds. When expired, we will
-   * trigger a background refresh while serving the last cached result.
-   */
-  private readonly _cacheTTLms = 5000;
-  private _cacheTimestamp = 0;
-
   private readonly _disposables: Disposable[] = [];
 
   // Public properties
@@ -183,12 +176,6 @@ export class TagBrowserProvider implements TreeDataProvider<NodeModel> {
     }
 
     if (this._cachedNodes) {
-      // If TTL expired, trigger background refresh but serve stale nodes
-      if (Date.now() - this._cacheTimestamp > this._cacheTTLms) {
-        if (!this._cachePromise) {
-          setTimeout(() => this.refresh(), 0);
-        }
-      }
       return this._cachedNodes;
     }
 
@@ -196,17 +183,22 @@ export class TagBrowserProvider implements TreeDataProvider<NodeModel> {
       return this._cachePromise;
     }
 
-    const versionAtStart = this._version;
-    this._cachePromise = this.getTagTree().then((nodes: NodeModel[]) => {
-      // Ignore if disposed or a newer refresh occurred meanwhile
+    this._cachePromise = (async (): Promise<NodeModel[]> => {
+      if (!this.tagIndexService.isInitialized()) {
+        await this.tagIndexService.ensureInitialized();
+      }
+
+      const versionAtStart = this._version;
+      const nodes = await this.getTagTree();
+
       if (this._isDisposed || versionAtStart !== this._version) {
         return this._cachedNodes ?? [];
       }
+
       this._cachedNodes = nodes;
-      this._cacheTimestamp = Date.now();
       this._cachePromise = undefined;
       return nodes;
-    });
+    })();
 
     return this._cachePromise;
   }
@@ -230,7 +222,6 @@ export class TagBrowserProvider implements TreeDataProvider<NodeModel> {
     this._version++;
     this._cachedNodes = undefined;
     this._cachePromise = undefined;
-    this._cacheTimestamp = 0;
     this._onDidChangeTreeData.fire();
   }
 
@@ -257,7 +248,6 @@ export class TagBrowserProvider implements TreeDataProvider<NodeModel> {
     this._disposables.length = 0;
     this._cachedNodes = undefined;
     this._cachePromise = undefined;
-    this._cacheTimestamp = 0;
   }
 
   // Private methods

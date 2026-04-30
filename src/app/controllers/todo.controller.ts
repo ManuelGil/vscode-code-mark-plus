@@ -97,6 +97,8 @@ export class TodoController {
    */
   public async openTodoFile(): Promise<void> {
     try {
+      await this.todoService.initializeNotesDirectory(false);
+
       const todoFilePath = this.todoService.getTodoFilePath();
 
       if (!todoFilePath) {

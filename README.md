@@ -76,6 +76,7 @@ It does **not** replace your language server, formatter, or Git integration; it 
   - [Commands and Keybindings](#commands-and-keybindings)
   - [Limitations](#limitations)
   - [Installation \& Usage](#installation--usage)
+  - [Performance \& Behavior](#performance--behavior)
   - [Contributing](#contributing)
   - [Code of Conduct](#code-of-conduct)
   - [Changelog](#changelog)
@@ -144,6 +145,7 @@ You can customize CodeMark+ through your VSCode settings. Below are the main opt
 
 ### General Settings
 
+<!-- markdownlint-disable MD060 -->
 | Setting                                  | Type    | Default      | Description                                         |
 | ---------------------------------------- | ------- | ------------ | --------------------------------------------------- |
 | `codeMarkPlus.enable`                    | boolean | true         | Enable or disable CodeMark+ features.               |
@@ -160,7 +162,8 @@ You can customize CodeMark+ through your VSCode settings. Below are the main opt
 | `codeMarkPlus.author`                    | string  | "Unknown"    | Default author name for comments.                   |
 | `codeMarkPlus.version`                   | string  | "1.0.0"      | Default version for comments.                       |
 | `codeMarkPlus.license`                   | string  | "MIT"        | Default license for comments.                       |
-| `codeMarkPlus.highlightActive`           | boolean | true         | Enable or disable dynamic highlighting.             |
+| `codeMarkPlus.highlightActive`           | boolean | false        | Enable or disable dynamic highlighting.             |
+<!-- markdownlint-enable MD060 -->
 
 ### Highlight Rules
 
@@ -414,7 +417,15 @@ Customize shortcuts in **Keyboard Shortcuts** settings.
 5. **Open a folder or multi-root workspace** so the extension can load `codeMarkPlus` settings and file globs.
 6. Add or confirm `codeMarkPlus.highlightRules` in `settings.json` (see [Highlight Rules](#highlight-rules)).
 7. In the Explorer, open **Tag Browser**, use **Refresh** once, then expand **tag → file → occurrence** to navigate hits.
-8. Use the Command Palette category **codeMark+** (or keybindings above) for comments, notes, and TODO actions.
+8. Use the Command Palette category **CodeMark+** (or keybindings above) for comments, notes, and TODO actions.
+
+## Performance & Behavior
+
+CodeMark+ is designed to be non-intrusive:
+
+- No background processing when idle
+- Features activate only when used
+- No automatic file creation
 
 ## Contributing
 

@@ -62,6 +62,7 @@ export class TagIndexService implements Disposable {
   readonly onDidUpdateIndex = this.onDidUpdateIndexEmitter.event;
 
   private fullIndex = new Map<string, Map<string, TagEntry[]>>();
+  private initialized = false;
 
   constructor(private readonly controller: TagBrowserController) {}
 
@@ -70,6 +71,8 @@ export class TagIndexService implements Disposable {
    */
   clear(): void {
     this.perFileCache.clear();
+    this.fullIndex = new Map();
+    this.initialized = false;
   }
 
   /**
@@ -77,6 +80,32 @@ export class TagIndexService implements Disposable {
    */
   dispose(): void {
     this.clear();
+  }
+
+  /**
+   * Returns whether the index has already been built at least once.
+   */
+  isInitialized(): boolean {
+    return this.initialized;
+  }
+
+  /**
+   * Ensures the workspace has been scanned once before the browser needs data.
+   */
+  async ensureInitialized(token?: CancellationToken): Promise<void> {
+    if (this.initialized) {
+      return;
+    }
+
+    await this.scanWorkspace(token);
+  }
+
+  /**
+   * Rebuilds the index on demand.
+   */
+  async refreshWorkspace(token?: CancellationToken): Promise<void> {
+    this.clear();
+    await this.scanWorkspace(token);
   }
 
   /**
@@ -114,6 +143,7 @@ export class TagIndexService implements Disposable {
     if (token?.isCancellationRequested) {
       return;
     }
+    this.initialized = true;
     this.onDidUpdateIndexEmitter.fire();
   }
 

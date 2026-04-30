@@ -19,11 +19,9 @@ import { getWorkspaceRoot, readFileContent, saveFile } from '../helpers';
 export class TodoService {
   private notesDir: Uri | null = null;
 
-  constructor(readonly config: ExtensionConfig) {
-    this.initializeNotesDirectory();
-  }
+  constructor(readonly config: ExtensionConfig) {}
 
-  async initializeNotesDirectory(): Promise<void> {
+  async initializeNotesDirectory(createMissing = true): Promise<void> {
     const workspaceRoot = getWorkspaceRoot(this.config);
     if (!workspaceRoot) {
       return;
@@ -35,14 +33,20 @@ export class TodoService {
     );
 
     try {
-      // Create the notes directory if it doesn't exist
-      await workspace.fs.createDirectory(this.notesDir);
+      if (createMissing) {
+        // Create the notes directory only when a command explicitly needs it.
+        await workspace.fs.createDirectory(this.notesDir);
 
-      // Create default files if enabled
-      if (this.config.createDefaultFiles) {
-        await this.createDefaultFiles();
+        if (this.config.createDefaultFiles) {
+          await this.createDefaultFiles();
+        }
+
+        return;
       }
+
+      await workspace.fs.stat(this.notesDir);
     } catch (error) {
+      this.notesDir = null;
       console.error('Error initializing notes directory:', error);
     }
   }
