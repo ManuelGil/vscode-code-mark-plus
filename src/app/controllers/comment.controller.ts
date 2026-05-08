@@ -169,7 +169,9 @@ export class CommentController {
         editor.document.languageId,
       );
       if (comments.length === 0) {
-        window.showInformationMessage(l10n.t('No comments found for removal'));
+        window.showInformationMessage(
+          l10n.t('No annotation comments found to clean'),
+        );
         return;
       }
 
@@ -181,11 +183,11 @@ export class CommentController {
 
       const selected = await window.showQuickPick(picks, {
         canPickMany: true,
-        placeHolder: l10n.t('Select the comments to remove'),
+        placeHolder: l10n.t('Select annotation comments to clean'),
       });
       if (!selected || selected.length === 0) {
         window.showInformationMessage(
-          l10n.t('No comments selected for removal'),
+          l10n.t('No annotation comments selected'),
         );
         return;
       }
@@ -215,7 +217,7 @@ export class CommentController {
       });
 
       window.showInformationMessage(
-        l10n.t('Selected comments have been removed'),
+        l10n.t('Selected annotation comments were cleaned'),
       );
     } catch (error) {
       console.error('Error removing comments:', error);
@@ -253,7 +255,9 @@ export class CommentController {
       );
 
       if (comments.length === 0) {
-        window.showInformationMessage(l10n.t('No comments found for removal'));
+        window.showInformationMessage(
+          l10n.t('No annotation comments found to clean'),
+        );
         return;
       }
 
@@ -283,7 +287,7 @@ export class CommentController {
       });
 
       window.showInformationMessage(
-        l10n.t('All single-line comments have been removed'),
+        l10n.t('All single-line annotation comments were cleaned'),
       );
     } catch (error) {
       console.error('Error removing all comments:', error);

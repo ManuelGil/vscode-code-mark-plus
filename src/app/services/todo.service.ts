@@ -76,7 +76,7 @@ export class TodoService {
         currentContent = await readFileContent(todoFileUri);
       } catch {
         // File doesn't exist, will be created with initial content
-        currentContent = '# Todo List\n\n';
+        currentContent = '# TODO\n\n';
       }
 
       // Get the current date and time
@@ -84,7 +84,7 @@ export class TodoService {
       const timestamp = now.toISOString().replace(/T/, ' ').replace(/\..+/, '');
 
       // Append content with timestamp
-      const formattedContent = `\n## Added on ${timestamp}\n\n${content}\n`;
+      const formattedContent = `\n## Captured on ${timestamp}\n\n${content}\n`;
       const newContent = currentContent + formattedContent;
 
       await saveFile(relativeDirPath, todoFileName, newContent, this.config);

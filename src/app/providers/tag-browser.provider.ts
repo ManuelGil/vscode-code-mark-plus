@@ -2,6 +2,7 @@ import {
   type Disposable,
   Event,
   EventEmitter,
+  l10n,
   Position,
   ProviderResult,
   Range,
@@ -145,7 +146,7 @@ export class TagBrowserProvider implements TreeDataProvider<NodeModel> {
     if (element.resourceUri && element.range && !element.children) {
       element.command = {
         command: 'vscode.open',
-        title: 'Open File',
+        title: l10n.t('Open annotation location'),
         arguments: [element.resourceUri, { selection: element.range }],
       };
     }
@@ -263,7 +264,13 @@ export class TagBrowserProvider implements TreeDataProvider<NodeModel> {
   private async getTagTree(): Promise<NodeModel[]> {
     const index = this.tagIndexService.getIndex();
     if (index.size === 0) {
-      return [new NodeModel('No tags found in workspace.')];
+      return [
+        new NodeModel(
+          l10n.t(
+            'No annotations found yet. Add TODO/FIXME/NOTE tags in code and refresh the Annotation Hub.',
+          ),
+        ),
+      ];
     }
 
     // Use configured priorities to sort tags deterministically.
@@ -293,6 +300,7 @@ export class TagBrowserProvider implements TreeDataProvider<NodeModel> {
       const filePaths: string[] = Array.from(filesMap.keys()).sort((l, r) =>
         l.localeCompare(r),
       );
+      let totalOccurrences = 0;
 
       const fileNodes: NodeModel[] = [];
       for (const filePath of filePaths) {
@@ -300,6 +308,7 @@ export class TagBrowserProvider implements TreeDataProvider<NodeModel> {
         const entries: TagEntry[] = [...(filesMap.get(filePath) ?? [])].sort(
           (l: TagEntry, r: TagEntry) => l.lineNumber - r.lineNumber,
         );
+        totalOccurrences += entries.length;
 
         const occurrenceNodes: NodeModel[] = entries.map(
           (occurrence: TagEntry) => {
@@ -312,6 +321,10 @@ export class TagBrowserProvider implements TreeDataProvider<NodeModel> {
             node.resourceUri = uri;
             node.range = range;
             node.contextValue = 'occurrenceNode';
+            node.description = l10n.t(
+              'Line {0}',
+              String(occurrence.lineNumber + 1),
+            );
             return node;
           },
         );
@@ -324,16 +337,26 @@ export class TagBrowserProvider implements TreeDataProvider<NodeModel> {
           'file',
           occurrenceNodes,
         );
+        fileNode.description = l10n.t(
+          '{0} annotations',
+          String(occurrenceNodes.length),
+        );
+        fileNode.tooltip = uri.fsPath;
         fileNodes.push(fileNode);
       }
 
       const tagNode = new NodeModel(
         tagKey,
-        undefined,
+        new ThemeIcon('tag'),
         undefined,
         undefined,
         'tagNode',
         fileNodes,
+      );
+      tagNode.description = l10n.t(
+        '{0} annotations in {1} files',
+        String(totalOccurrences),
+        String(filePaths.length),
       );
       rootNodes.push(tagNode);
     }

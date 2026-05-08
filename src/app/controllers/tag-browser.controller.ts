@@ -166,7 +166,7 @@ export class TagBrowserController {
           undefined,
           {
             command: `${EXTENSION_ID}.tagBrowserView.openFile`,
-            title: l10n.t('Open Preview'),
+            title: l10n.t('Open annotation location'),
             arguments: [fileUri],
           },
           fileUri,

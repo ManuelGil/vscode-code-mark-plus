@@ -41,12 +41,12 @@ export class TodoController {
         // Prompt for content
         content =
           (await window.showInputBox({
-            prompt: l10n.t('Enter content to add to todo file'),
-            placeHolder: l10n.t('Todo item content'),
+            prompt: l10n.t('Add a note to the workspace TODO'),
+            placeHolder: l10n.t('Annotation note'),
             validateInput: (value) => {
               return value && value.trim().length > 0
                 ? null
-                : l10n.t('Content cannot be empty');
+                : l10n.t('Note content cannot be empty');
             },
           })) || '';
 
@@ -59,22 +59,20 @@ export class TodoController {
       const success = await this.todoService.appendToTodoFile(content);
 
       if (success) {
-        window.showInformationMessage(l10n.t('Added to todo file'));
+        window.showInformationMessage(l10n.t('Added note to workspace TODO'));
 
         // Ask if user wants to open the todo file
-        const yes = l10n.t('Yes');
-        const no = l10n.t('No');
+        const openTodoAction = l10n.t('Open workspace TODO');
         const openFile = await window.showInformationMessage(
-          l10n.t('Content added to todo file. Open it now?'),
-          yes,
-          no,
+          l10n.t('Note added to workspace TODO. Open it now?'),
+          openTodoAction,
         );
 
-        if (openFile === yes) {
+        if (openFile === openTodoAction) {
           await this.openTodoFile();
         }
       } else {
-        window.showErrorMessage(l10n.t('Failed to add content to todo file'));
+        window.showErrorMessage(l10n.t('Failed to add note to workspace TODO'));
       }
     } catch (error) {
       console.error('Error appending to todo file:', error);
