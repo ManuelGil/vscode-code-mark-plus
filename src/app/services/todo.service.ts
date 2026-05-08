@@ -142,12 +142,33 @@ export class TodoService {
       // Create todo file
       createFileIfNotExists(
         this.config.todoFileName,
-        '# Project Todo List\n\nAdd your project todos here.\n',
+        [
+          '# TODO',
+          '',
+          'Pending tasks, refactors, follow-ups, and reminders.',
+          '',
+          '## Today',
+          '',
+          '- ',
+          '',
+          '## Later',
+          '',
+          '- ',
+          '',
+        ].join('\n'),
       ),
+
       // Create scratchpad file
       createFileIfNotExists(
         this.config.scratchpadFileName,
-        '# Project Scratchpad\n\nUse this file for quick notes and temporary content.\n',
+        [
+          '# Scratchpad',
+          '',
+          'Quick thoughts, debugging notes, temporary ideas, and anything worth keeping nearby.',
+          '',
+          '---',
+          '',
+        ].join('\n'),
       ),
     ]);
   }

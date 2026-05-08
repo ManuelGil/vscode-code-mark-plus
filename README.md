@@ -4,428 +4,434 @@
 [![GitHub Repo Stars](https://img.shields.io/github/stars/ManuelGil/vscode-code-mark-plus?style=for-the-badge&logo=github)](https://github.com/ManuelGil/vscode-code-mark-plus)
 [![GitHub License](https://img.shields.io/github/license/ManuelGil/vscode-code-mark-plus?style=for-the-badge&logo=github)](https://github.com/ManuelGil/vscode-code-mark-plus/blob/main/LICENSE)
 
-> Insert language-appropriate documentation blocks, highlight tagged comments from settings, browse those tags across the workspace, and keep a project TODO file next to your code.
+> Fast developer-focused annotation workflows for comments, TODOs, highlights, and lightweight workspace documentation directly inside VS Code.
 
-## What problem does this solve?
+CodeMark+ helps you create, organize, highlight, and navigate developer annotations without leaving your coding workflow.
 
-- **Scattered markers** (`TODO:`, `FIXME:`, custom tags) are easy to lose in large repos; you need them **visible in the editor** and **indexed so you can jump to each occurrence**.
-- **Repetitive doc comments** (signature, params, file metadata) are tedious to type by hand; you want a **consistent block** driven by templates when the language service exposes a function/method symbol.
-- **Lightweight project memory** (a shared TODO) should live **in the workspace** with optional links back to source lines.
+It combines:
 
-CodeMark+ addresses these with configurable highlight rules and decorations, Mustache-based insert templates, a Tag Browser tree backed by the same rules, and a configurable notes folder (default `.codemark`) including a Markdown TODO file.
+- **customizable comment templates**
+- **workspace-wide tag navigation**
+- **live annotation highlighting**
+- **lightweight shared notes**
+- **developer-focused TODO workflows**
 
-## What is this extension?
+into a cohesive annotation system designed for real-world development workflows.
 
-CodeMark+ is a **workspace-scoped** VS Code extension. After you pick a folder (single- or multi-root), it:
+## Why CodeMark+ Exists
 
-- Registers commands for **insert/remove** documentation-style comments, **TODO** workflows, **Tag Browser refresh/open**, and **changing the active workspace folder** for settings.
-- Applies **editor decorations** from `codeMarkPlus.highlightRules` (with overlap priority, optional language scoping, and regex rules where configured).
-- Runs a **background index** over files matched by your include/exclude globs so the Tag Browser can list matches (with internal caps and caching for responsiveness).
+Developer annotations are everywhere:
 
-It does **not** replace your language server, formatter, or Git integration; it complements them for comments, markers, and small project notes.
+```ts
+// TODO: remove legacy auth flow
+// FIXME: race condition during refresh
+// NOTE: keep aligned with API v2
+// HACK: temporary compatibility patch
+```
 
-## Core Features
+But in most projects these annotations become:
 
-| Area                       | What you get                                                                                                                                                                                                                                                                                                                                       |
-| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Documentation comments** | Insert a Mustache-rendered block from built-in or `customTemplates`; placement uses the document symbol under the cursor when possible, or the current line when `useCurrentPosition` is enabled. The active document’s `languageId` selects the template when it is one of the supported template languages; otherwise `defaultLanguage` applies. |
-| **Highlighting**           | Live decorations in the active editor from your rules, plus optional `// HIGHLIGHT:` directives for whole-line emphasis (see Usage).                                                                                                                                                                                                               |
-| **Notes**                  | Shared TODO file under `codeMarkPlus.notes.notesFolder`, optional default `(TODO).md`, commands to append content and open the TODO file.                                                                                                                                                                                                          |
-| **Tag Browser**            | Explorer view `codeMarkPlus.tagBrowserView`: tree **tag → file → occurrence**; refresh rescans; clicking an occurrence opens the file at that line. Show or hide the section from the Explorer like any built-in view (no extension setting).                                                                                                      |
+- scattered
+- invisible
+- inconsistent
+- difficult to navigate
+- disconnected from the actual workflow
 
-## How it works
+At the same time, repetitive documentation comments and lightweight project notes often require unnecessary manual effort.
 
-- **Comment generation**: `CommentController` asks VS Code for document symbols, builds `CommentData`, and `CommentService` picks a template (built-in or custom) per **resolved language** (document `languageId` when supported, else `defaultLanguage`), then renders with Mustache.
-- **Single-line removal**: `CommentService.findSingleLineComments` scans the active file for **language-appropriate line comment markers** (e.g. `//`, `#`, `--`) derived from `document.languageId` via a small lookup table, with **`//` as fallback** for unknown languages.
-- **Highlighting**: `HighlightController` decorates visible ranges (plus a line buffer), skips very large files for full processing, and debounces on edit.
-- **Tag index**: `TagIndexService` uses the same normalized rules as highlighting, scans matching files with concurrency and size limits, caches per-file by mtime, and notifies the Tag Browser provider when the index changes.
-- **Notes/TODO**: `TodoService` reads and writes the shared TODO file under the notes folder.
+CodeMark+ is designed to make annotations feel:
 
-## Use cases
+- visible
+- structured
+- searchable
+- configurable
+- lightweight
+- naturally integrated into the editor
 
-- You mark technical debt with `TODO:` / `FIXME:` and want **one place in the sidebar** to drill into every hit across `*.ts` / `*.md` (or your globs).
-- You want a **docblock** inserted above the current method without hand-copying `@param` lines when symbols are available.
-- You keep a **team TODO** in `(TODO).md` and push items from the editor with “Append to TODO file”.
+without turning your workspace into a heavyweight documentation system.
 
 ![CodeMark+ in Action](https://raw.githubusercontent.com/ManuelGil/vscode-code-mark-plus/main/images/vscode-code-mark-plus.gif)
 
-## Table of Contents
+## What CodeMark+ Is
 
-- [CodeMark+](#codemark)
-  - [What problem does this solve?](#what-problem-does-this-solve)
-  - [What is this extension?](#what-is-this-extension)
-  - [Core Features](#core-features)
-  - [How it works](#how-it-works)
-  - [Use cases](#use-cases)
-  - [Table of Contents](#table-of-contents)
-  - [Usage](#usage)
-    - [Dynamic Keyword Highlighting](#dynamic-keyword-highlighting)
-    - [Special Highlight Directives](#special-highlight-directives)
-    - [Insert \& Remove Comments](#insert--remove-comments)
-    - [Notes (Project TODO)](#notes-project-todo)
-    - [Tag Browser](#tag-browser)
-  - [Configuration Options](#configuration-options)
-    - [General Settings](#general-settings)
-    - [Highlight Rules](#highlight-rules)
-    - [Special Highlight Decoration](#special-highlight-decoration)
-    - [Feature Settings: Quick Actions](#feature-settings-quick-actions)
-    - [Workspace Scanning \& Performance Settings](#workspace-scanning--performance-settings)
-    - [Supported Languages](#supported-languages)
-    - [Custom Comment Templates](#custom-comment-templates)
-  - [Performance](#performance)
-  - [Commands and Keybindings](#commands-and-keybindings)
-  - [Limitations](#limitations)
-  - [Installation \& Usage](#installation--usage)
-  - [Performance \& Behavior](#performance--behavior)
-  - [Contributing](#contributing)
-  - [Code of Conduct](#code-of-conduct)
-  - [Changelog](#changelog)
-  - [Authors](#authors)
-  - [Follow Me](#follow-me)
-  - [Other Extensions](#other-extensions)
-  - [Recommended Browser Extension](#recommended-browser-extension)
-  - [License](#license)
+CodeMark+ is a workspace-focused annotation and documentation extension for VS Code.
 
-## Usage
+It provides:
 
-### Dynamic Keyword Highlighting
+- annotation generation using customizable Mustache templates
+- live highlighting for TODO/FIXME/NOTE-style markers
+- a Tag Browser for navigating annotations across the workspace
+- lightweight Markdown-based project notes
+- shared TODO workflows
+- configurable annotation formatting and behaviors
 
-By default, CodeMark+ styles `TODO`, `FIXME`, and `NOTE` based on your configuration.
+The extension is designed to complement your existing development workflow — not replace your formatter, language server, issue tracker, or documentation platform.
 
-> Keyword-based rules support both `TODO` and `TODO:` formats for compatibility. Use `matchMode: "regex"` if you need custom separators.
+## Core Workflow
 
-### Special Highlight Directives
+A typical workflow in CodeMark+ looks like this:
 
-Place a directive above or next to code:
+1. Add annotations while coding
 
-```js
-// HIGHLIGHT: next line
-console.log('This line is highlighted.');
+      ```ts
+      // TODO: optimize cache invalidation
+      // FIXME: duplicate API request
+      // NOTE: temporary migration logic
+      ```
+
+2. See annotations highlighted directly in the editor
+
+3. Navigate them later using the Tag Browser
+
+      ```text
+      TODO
+      └── auth.service.ts
+            └── optimize cache invalidation
+
+      FIXME
+      └── api.client.ts
+            └── duplicate API request
+      ```
+
+4. Create structured documentation comments using reusable templates
+
+5. Keep lightweight shared workspace notes close to the codebase
+
+The goal is to reduce friction while keeping developer context visible and accessible.
+
+## Philosophy
+
+CodeMark+ is intentionally:
+
+- lightweight
+- workspace-oriented
+- developer-focused
+- highly configurable
+- annotation-centric
+
+It is **not**:
+
+- a PKM platform
+- a semantic graph system
+- an AI documentation engine
+- a YAML knowledge framework
+- a replacement for full documentation platforms
+
+Annotations should feel fast, useful, and natural — not ceremonial.
+
+## Core Features
+
+### Annotation Highlighting
+
+CodeMark+ can highlight developer annotations directly inside the editor using customizable rules.
+
+Supported workflows include:
+
+- TODO tracking
+- FIXME visibility
+- NOTE reminders
+- HACK warnings
+- custom annotation tags
+
+Example:
+
+```ts
+// TODO: refactor auth middleware
+// FIXME: duplicate websocket subscription
+// NOTE: remove after API v3 migration
 ```
 
-Supported directives:
+Annotations remain visible while coding, reducing the chance of losing important operational context.
 
-- `next line`, `previous line`, `current line`
-- `line <number>`
-- `range <start>-<end>`
+### Workspace Tag Browser
 
-### Insert & Remove Comments
+The Tag Browser provides a workspace-wide view of annotations grouped by tag.
 
-- **Insert Comment**: `CodeMark+: Insert Comment` (Ctrl+Alt+U / ⌘+Alt+U)
-- **Remove single-line comments (picker)**: `CodeMark+: Remove Single-Line Comments` (Ctrl+Alt+Shift+U / ⌘+Alt+Shift+U)
-- **Remove all single-line comments**: `CodeMark+: Remove All Single-Line Comments` (palette or editor context menu)
+Example structure:
 
-**Language-aware removal:** detection uses the active document’s `languageId` to choose a line marker (for example `//` for JavaScript/TypeScript, `#` for Python and shell scripts, `--` for SQL, `--` for Lua/Haskell). Languages without a dedicated mapping use `//` as a conservative default—verify results on exotic grammars.
+```text
+TODO
+ ├── auth.service.ts
+ │    └── refactor auth middleware
+ │
+ └── cache.manager.ts
+      └── optimize invalidation strategy
 
-**Insert behavior:** when the language server returns a function/method symbol containing the cursor and `useCurrentPosition` is `false`, the block is inserted at the start of that symbol’s range; otherwise it inserts at the current line. Template language resolution prefers `document.languageId` when it matches a supported template language, else `codeMarkPlus.defaultLanguage`.
-
-Access via the Command Palette (Ctrl+Shift+P / ⌘+Shift+P) or the editor context menu where contributed.
-
-### Notes (Project TODO)
-
-Manage a shared TODO file per workspace:
-
-- Append to the TODO file: select text or run "CodeMark+: Append to TODO file" and enter content.
-- Open the TODO file: run "CodeMark+: Open TODO file".
-
-The TODO file is created inside your workspace using sensible defaults from the extension configuration.
-
-### Tag Browser
-
-Browse matches for your **highlight rules** across the workspace:
-
-- **View id:** `codeMarkPlus.tagBrowserView` (Explorer sidebar). Visibility is controlled with the normal Explorer UI (e.g. hide/show sections); the extension always registers the tree data provider when active.
-- **Tree shape:** **Tag → file → occurrence** (each occurrence opens the file at the matched line when activated).
-- **Actions:** title-bar **Refresh** clears the index cache and rescans; the **Open File** command is available from the file item’s context menu (`viewItem == file`).
-- **Indexing:** uses the same normalized `highlightRules` as in-editor highlighting (single source of truth), subject to include/exclude globs, optional `.gitignore` respect, file size caps, and internal occurrence limits (see Limitations).
-
-## Configuration Options
-
-You can customize CodeMark+ through your VSCode settings. Below are the main options:
-
-### General Settings
-
-<!-- markdownlint-disable MD060 -->
-| Setting                                  | Type    | Default      | Description                                         |
-| ---------------------------------------- | ------- | ------------ | --------------------------------------------------- |
-| `codeMarkPlus.enable`                    | boolean | true         | Enable or disable CodeMark+ features.               |
-| `codeMarkPlus.defaultLanguage`           | string  | "javascript" | Default language for comments.                      |
-| `codeMarkPlus.isCommentMessageWrapped`   | boolean | false        | Wrap comments with borders if enabled.              |
-| `codeMarkPlus.commentDelimiter`          | string  | "~"          | Delimiter used between comment parts.               |
-| `codeMarkPlus.commentMessagePrefix`      | string  | "🔹"          | Prefix for inserted comments.                       |
-| `codeMarkPlus.commentMessageSuffix`      | string  | ":"          | Suffix for inserted comments.                       |
-| `codeMarkPlus.addEmptyLineBeforeComment` | boolean | false        | Add an empty line before the comment block.         |
-| `codeMarkPlus.addEmptyLineAfterComment`  | boolean | false        | Add an empty line after the comment block.          |
-| `codeMarkPlus.literalOpen`               | string  | "{"          | Opening character for template literals.            |
-| `codeMarkPlus.literalClose`              | string  | "}"          | Closing character for template literals.            |
-| `codeMarkPlus.useCurrentPosition`        | boolean | false        | Use current cursor position for inserting comments. |
-| `codeMarkPlus.author`                    | string  | "Unknown"    | Default author name for comments.                   |
-| `codeMarkPlus.version`                   | string  | "1.0.0"      | Default version for comments.                       |
-| `codeMarkPlus.license`                   | string  | "MIT"        | Default license for comments.                       |
-| `codeMarkPlus.highlightActive`           | boolean | false        | Enable or disable dynamic highlighting.             |
-<!-- markdownlint-enable MD060 -->
-
-### Highlight Rules
-
-Rules tell CodeMark+ what to detect and how to decorate it. Each rule provides either a `keyword` or a `pattern` (regex), plus a background `color`. Optional fields control styles, matching behavior, language scoping, and overlap resolution.
-
-- `keyword`: text to match (ignored when `pattern` is used)
-- `matchMode`: `"word" | "substring" | "regex"` (default inferred: `regex` if `pattern` exists, else `word`)
-- `pattern`: ECMAScript regex used when `matchMode` is `regex` (e.g., `BUG-\\d+`)
-- `color`: CSS color for background (e.g., `#RRGGBB`, `rgba()`)
-- `bold` | `italic` | `underline` | `strikethrough`: text styles
-- `caseSensitive`: default `true`
-- `wholeWord`: default `true`; applies only to `word` mode; ignored in `substring` and `regex` modes
-- `languageIds`: limit to specific VS Code language IDs
-- `priority`: number; higher wins when rules overlap (default `0`)
-
-Recommended tags you may want to cover out of the box:
-
-- **Tasks/Issues**: TODO, FIXME, BUG, HACK, WIP, TEMP
-- **Refactor/Perf**: REFACTOR, OPTIMIZE, PERF
-- **Quality/Security**: WARNING, DEPRECATED, SECURITY, VULN
-- **Docs/Info**: NOTE, INFO, DOCS
-- **Process/Comm**: REVIEW, QUESTION, IDEA
-- **Planning**: NEXT, LATER, IMPORTANT, CRITICAL, BLOCKER, DONE
-
-Comprehensive example:
-
-```json
-"codeMarkPlus.highlightRules": [
-  { "keyword": "TODO",       "color": "rgba(255,204,0,0.30)",  "bold": true,  "priority": 10 },
-  { "keyword": "FIXME",      "color": "rgba(255, 64,64,0.25)",  "bold": true,  "underline": true, "priority": 20 },
-  { "keyword": "BUG",        "color": "rgba(255,128, 0,0.25)",  "bold": true },
-  { "keyword": "HACK",       "color": "rgba(255,128, 0,0.20)",  "italic": true },
-  { "keyword": "WIP",        "color": "rgba(128,128,128,0.20)", "italic": true },
-  { "keyword": "TEMP",       "color": "rgba(128,128,128,0.15)", "strikethrough": true },
-
-  { "keyword": "REFACTOR",   "color": "rgba( 64,128,255,0.20)", "bold": true },
-  { "keyword": "OPTIMIZE",   "color": "rgba( 64,128,255,0.15)", "italic": true },
-  { "keyword": "PERF",       "color": "rgba( 64,128,255,0.15)", "italic": true },
-
-  { "keyword": "WARNING",    "color": "rgba(255,192,  0,0.20)", "bold": true },
-  { "keyword": "DEPRECATED", "color": "rgba(192,192,192,0.25)", "strikethrough": true },
-  { "keyword": "SECURITY",   "color": "rgba(255,  0,128,0.20)", "bold": true },
-  { "keyword": "VULN",       "color": "rgba(255,  0,128,0.20)", "bold": true },
-
-  { "keyword": "NOTE",       "color": "rgba(  0,255,  0,0.20)", "italic": true },
-  { "keyword": "INFO",       "color": "rgba(  0,255,  0,0.15)", "italic": true },
-  { "keyword": "DOCS",       "color": "rgba(  0,255,128,0.15)", "italic": true },
-
-  { "keyword": "REVIEW",     "color": "rgba(128, 64,255,0.20)", "underline": true },
-  { "keyword": "QUESTION",   "color": "rgba(128, 64,255,0.15)", "italic": true },
-  { "keyword": "IDEA",       "color": "rgba(128, 64,255,0.15)", "italic": true },
-
-  { "keyword": "NEXT",       "color": "rgba(  0,192,255,0.20)", "bold": true },
-  { "keyword": "LATER",      "color": "rgba(  0,192,255,0.15)" },
-  { "keyword": "IMPORTANT",  "color": "rgba(255, 64,  0,0.25)", "bold": true },
-  { "keyword": "CRITICAL",   "color": "rgba(255,  0,  0,0.25)", "bold": true, "priority": 30 },
-  { "keyword": "BLOCKER",    "color": "rgba(255,  0,  0,0.25)", "bold": true, "priority": 30 },
-  { "keyword": "DONE",       "color": "rgba(  0,255,128,0.12)", "strikethrough": true },
-
-  { "matchMode": "regex", "pattern": "BUG-\\d+",           "color": "rgba(255,128,0,0.18)",  "italic": true },
-  { "matchMode": "regex", "pattern": "[A-Z]{2,5}-\\d{1,6}", "color": "rgba(  0,192,255,0.15)", "underline": true },
-  { "keyword": "TODO", "color": "rgba(255,204,0,0.30)", "bold": true, "languageIds": ["typescript", "javascript"] }
-]
+FIXME
+ └── websocket.ts
+      └── duplicate websocket subscription
 ```
 
-Notes and tips:
+This makes it easier to:
 
-- **Overlap and priority**: When two rules match the same range, the one with higher `priority` is applied. If equal, the first applied may win depending on implementation order.
-- **Case sensitivity and words**: `caseSensitive` defaults to `true`. `wholeWord` applies only to `word` mode and is ignored in `substring` and `regex`. A warning is emitted if `wholeWord` is set with those modes.
-- **Language scoping**: Use `languageIds` to avoid noise across file types (e.g., reserve `TODO` styles for code, different for `markdown`).
-- **Performance**: Prefer concise regex and keep the number of active rules reasonable for very large workspaces.
-- **Regex safety**: Invalid regex patterns are ignored to prevent errors, and a status bar message is shown to indicate the problem.
-- **Keyword compatibility**: Keyword-based rules (non-`regex`) support both `TODO` and `TODO:`. Tag Browser scanning follows the same rule for consistency. Use `matchMode: "regex"` if you need different separators.
+- revisit pending work
+- navigate technical debt
+- track temporary decisions
+- surface operational notes
+- coordinate lightweight team workflows
 
-### Special Highlight Decoration
+The Tag Browser is designed to keep annotations discoverable without requiring external tooling.
 
-Customize the appearance of the special highlight applied for directives:
+### Customizable Annotation Templates
+
+CodeMark+ includes a configurable template engine for generating structured comments and documentation blocks.
+
+Templates support:
+
+- multiple programming languages
+- Mustache variables
+- reusable documentation structures
+- configurable wrapping behaviors
+- customizable formatting styles
+
+Example:
 
 ```json
-"codeMarkPlus.specialHighlightDecoration": {
-  "backgroundColor": "rgba(0,128,255,0.3)",
-  "border": "1px solid blue",
-  "isWholeLine": true
+{
+  "language": "typescript",
+  "template": [
+    "/**",
+    " * {{functionName}}",
+    " *",
+    " * @description {{description}}",
+    " * @returns {{returnType}}",
+    " */"
+  ]
 }
 ```
 
-### Feature Settings: Quick Actions
+Generated output:
 
-Define custom actions that can be surfaced by the extension (e.g., buttons/menus) and executed via VS Code commands. Each action provides a display `name`, the VS Code `command` id to run, optional `args` array, and optional `shortcut`/`icon` metadata.
+```ts
+/**
+ * fetchUserProfile
+ *
+ * @description Retrieves the active user profile
+ * @returns Promise<UserProfile>
+ */
+```
+
+The goal is to reduce repetitive documentation effort while preserving developer control over formatting and style.
+
+### Lightweight Workspace Notes
+
+CodeMark+ also supports lightweight Markdown-based workspace notes for fast operational context.
+
+Examples include:
+
+- scratchpads
+- implementation reminders
+- migration notes
+- temporary investigation logs
+- shared TODO tracking
+
+These notes are intentionally lightweight and workspace-oriented.
+
+They are designed to complement annotation workflows — not replace full documentation systems.
+
+## Common Workflows
+
+### Track Technical Debt
+
+```ts
+// TODO: remove legacy auth adapter
+// FIXME: retry loop can duplicate requests
+```
+
+Use highlighting and the Tag Browser to keep debt visible while developing.
+
+### Generate Consistent Documentation
+
+Use reusable templates to generate structured comments across projects and languages.
+
+Especially useful for:
+
+- shared team conventions
+- large codebases
+- repetitive APIs
+- service layers
+- public SDKs
+
+### Maintain Lightweight Operational Context
+
+Keep temporary decisions and implementation notes close to the workspace without introducing heavyweight documentation processes.
+
+## Designed for Real Development Workflows
+
+CodeMark+ works best when annotations are treated as:
+
+- operational context
+- implementation memory
+- lightweight coordination
+- fast documentation
+- visible technical signals
+
+instead of hidden comments scattered across the codebase.
+
+## Screenshots
+
+> Replace the following placeholders with updated screenshots focused on workflows rather than isolated features.
+
+### Annotation Highlighting
+
+*Show highlighted TODO/FIXME/NOTE annotations directly inside the editor.*
+
+### Tag Browser Navigation
+
+*Show workspace-wide annotation navigation grouped by tag.*
+
+### Comment Template Generation
+
+*Show generated documentation comments from reusable templates.*
+
+### Workspace Notes
+
+*Show lightweight Markdown notes integrated into the workspace workflow.*
+
+## Configuration
+
+CodeMark+ is intentionally configurable.
+
+The extension is designed to support different annotation styles, team conventions, and documentation workflows without forcing a rigid structure.
+
+## Highlight Rules
+
+Highlighting behavior can be customized using annotation rules.
+
+Example:
 
 ```json
-"codeMarkPlus.features.quickActions": [
-  { "name": "Format Document", "command": "editor.action.formatDocument" },
-  { "name": "Organize Imports", "command": "editor.action.organizeImports", "args": [] },
-  { "name": "Toggle Word Wrap", "command": "editor.action.toggleWordWrap", "icon": "wrap" }
+"codeMarkPlus.highlight.highlightRules": [
+  {
+    "tag": "TODO",
+    "color": "#FFCC00",
+    "fontWeight": "bold"
+  },
+  {
+    "tag": "FIXME",
+    "color": "#FF5555"
+  },
+  {
+    "tag": "NOTE",
+    "color": "#4FC1FF"
+  }
 ]
 ```
 
-Notes:
+This allows teams to create consistent visual annotation systems directly inside the editor.
 
-- `command` must be a valid VS Code command id (built-in or contributed by extensions).
-- `args` (if provided) are forwarded to the command.
-- `shortcut` and `icon` are optional metadata that may be used by UI surfaces to present the action.
+## Annotation Templates
 
-### Workspace Scanning & Performance Settings
+Templates can be customized per language using Mustache placeholders.
 
-These settings control discovery scope and file filtering used by the Tag Browser:
-
-| Setting                                        | Type     | Default                                                             | Description                                                  |
-| ---------------------------------------------- | -------- | ------------------------------------------------------------------- | ------------------------------------------------------------ |
-| `codeMarkPlus.files.includedFilePatterns`      | string[] | `["**/*{js,ts,md}"]`                                                | Glob patterns to include when scanning the workspace.        |
-| `codeMarkPlus.files.excludedFilePatterns`      | string[] | `["**/node_modules/**", "**/.git/**", "**/dist/**", "**/build/**"]` | Glob patterns to exclude from scans.                         |
-| `codeMarkPlus.files.maxSearchRecursionDepth`   | number   | `0`                                                                 | Maximum recursion depth for file search (`0` = unlimited).   |
-| `codeMarkPlus.files.supportsHiddenFiles`       | boolean  | `false`                                                             | Whether to include hidden files and folders.                 |
-| `codeMarkPlus.files.preserveGitignoreSettings` | boolean  | `true`                                                              | Whether to respect patterns from `.gitignore`.               |
-| `codeMarkPlus.files.showFilePathInResults`     | boolean  | `true`                                                              | Show relative path next to file name in Tag Browser results. |
-
-### Supported Languages
-
-CodeMark+ supports multiple programming languages for highlighting and comment management:
-
-- **JavaScript (`javascript`)**
-- **TypeScript (`typescript`)**
-- **Java (`java`)**
-- **C# (`csharp`)**
-- **PHP (`php`)**
-- **Dart (`dart`)**
-- **Python (`python`)**
-- **C++ (`cpp`)**
-- **Ruby (`ruby`)**
-- **Go (`go`)**
-- **Kotlin (`kotlin`)**
-- **Swift (`swift`)**
-- **Scala (`scala`)**
-- **Lua (`lua`)**
-- **Perl (`perl`)**
-- **Elixir (`elixir`)**
-- **Haskell (`haskell`)**
-
-### Custom Comment Templates
-
-Define custom comment templates for different languages using Mustache syntax. For example:
+Example:
 
 ```json
-"codeMarkPlus.customTemplates": [
+"codeMarkPlus.templates.customTemplates": [
   {
-    "language": "javascript",
+    "language": "typescript",
     "template": [
-      "{{indent}}/**",
-      "{{indent}} * @description the {{functionName}} method",
-      "{{indent}} * @signature {{signature}}",
-      "{{indent}} * @params:",
-      "{{#parameters}}{{indent}} *   - {{.}}",
-      "{{/parameters}}",
-      "{{indent}} * @returns {Type} - {{returnType}}",
-      "{{indent}} * @file {{fileName}}",
-      "{{indent}} * @date {{date}}",
-      "{{indent}} * @author {{author}}",
-      "{{indent}} * @version {{version}}",
-      "{{indent}} * @license {{license}}",
-      "{{indent}} */"
-    ]
-  },
-  {
-    "language": "python",
-    "template": [
-      "{{indent}}\"\"\"",
-      "{{indent}}Description: the {{functionName}} method",
-      "{{indent}}Signature: {{signature}}",
-      "{{indent}}Parameters:",
-      "{{#parameters}}{{indent}}    - {{.}}",
-      "{{/parameters}}",
-      "{{indent}}Returns: {{returnType}}",
-      "{{indent}}File: {{fileName}}",
-      "{{indent}}Date: {{date}}",
-      "{{indent}}Author: {{author}}",
-      "{{indent}}Version: {{version}}",
-      "{{indent}}License: {{license}}",
-      "{{indent}}\"\"\""
-    ]
-  },
-  {
-    "language": "kotlin",
-    "template": [
-      "{{indent}}/**",
-      "{{indent}} * @description the {{functionName}} method",
-      "{{indent}} * @signature {{signature}}",
-      "{{indent}} * @params:",
-      "{{#parameters}}{{indent}} *   - {{.}}",
-      "{{/parameters}}",
-      "{{indent}} * @returns {Type} - {{returnType}}",
-      "{{indent}} * @file {{fileName}}",
-      "{{indent}} * @date {{date}}",
-      "{{indent}} * @author {{author}}",
-      "{{indent}} * @version {{version}}",
-      "{{indent}} * @license {{license}}",
-      "{{indent}} */"
+      "/**",
+      " * {{functionName}}",
+      " *",
+      " * @description {{description}}",
+      " */"
     ]
   }
 ]
 ```
 
+Templates support:
+
+- reusable documentation structures
+- language-specific formatting
+- configurable wrapping behavior
+- custom annotation styles
+
+The template system is designed to reduce repetitive documentation work while preserving flexibility.
+
+## Storage Philosophy
+
+Workspace notes and annotation-related files are intentionally lightweight and developer-owned.
+
+The goal is to keep operational context:
+
+- visible
+- portable
+- versionable
+- easy to share
+- close to the codebase
+
+without introducing heavyweight external systems.
+
 ## Performance
 
-CodeMark+ is designed to be responsive on large files and workspaces.
+CodeMark+ is designed to remain lightweight during everyday development workflows.
 
-- Scans visible ranges with a buffer and updates on `onDidChangeTextEditorVisibleRanges`.
-- Debounced updates and chunked processing for large documents.
-- Configurable performance settings (via `codeMarkPlus.*`):
-  - `maxFilesToIndex`: 1000
-  - `concurrencyLimit`: 10
-  - `batchSize`: 10
-- Note: These settings are read from configuration and reserved for upcoming indexing enhancements.
-- Respects `codeMarkPlus.files.excludedFilePatterns` and applies conservative limits for very large files to keep the editor responsive.
-- For extremely large files, full highlighting is skipped above ~1 MB to keep VS Code responsive.
-- Adaptive limits: heuristics adjust chunking/thresholds based on document/workspace size.
+The extension focuses on:
 
-## Commands and Keybindings
+- fast annotation discovery
+- responsive highlighting
+- minimal workflow interruption
+- workspace-oriented navigation
 
-| Command                                    | Windows/Linux    | macOS         | Description                                                                                   |
-| ------------------------------------------ | ---------------- | ------------- | --------------------------------------------------------------------------------------------- |
-| `codeMarkPlus.insertComment`               | Ctrl+Alt+U       | ⌘+Alt+U       | Insert documentation comment block (see Usage).                                               |
-| `codeMarkPlus.removeSingleLineComments`    | Ctrl+Alt+Shift+U | ⌘+Alt+Shift+U | Quick Pick: remove chosen single-line comments (marker from `languageId`).                    |
-| `codeMarkPlus.removeAllSingleLineComments` | —                | —             | Remove every detected single-line comment in the active editor (no per-line confirmation).    |
-| `codeMarkPlus.changeWorkspace`             | —                | —             | Pick workspace folder for `codeMarkPlus.*` settings (multi-root).                             |
-| `codeMarkPlus.tagBrowserView.refreshList`  | —                | —             | Clear tag index cache and rescan workspace; tree refreshes when indexing completes.           |
-| `codeMarkPlus.tagBrowserView.openFile`     | —                | —             | Open a file URI (and optional line); used from Tag Browser context menu, hidden from palette. |
-| `codeMarkPlus.createProjectNote`           | —                | —             | Create Markdown note under the notes folder.                                                  |
-| `codeMarkPlus.openProjectNote`             | —                | —             | Open an existing note from Quick Pick.                                                        |
-| `codeMarkPlus.insertNoteLink`              | —                | —             | Insert Markdown link to a note at the cursor.                                                 |
-| `codeMarkPlus.appendToTodoFile`            | —                | —             | Append selection or prompted text to the configured TODO file.                                |
-| `codeMarkPlus.openTodoFile`                | —                | —             | Open the TODO Markdown file.                                                                  |
+while avoiding unnecessary complexity.
 
-Customize shortcuts in **Keyboard Shortcuts** settings.
+## Design Philosophy
 
-## Limitations
+CodeMark+ prioritizes:
 
-- **Workspace required:** activation expects a workspace folder; opening loose files without a folder is not supported for the full feature set.
-- **`HIGHLIGHT:` directives** are detected only on lines matching the built-in pattern **`// HIGHLIGHT:`** (C-style). Other comment styles are not interpreted for this feature.
-- **Single-line removal** uses a **heuristic line scan** (marker at start of match on the line); it can mis-detect markers inside string literals on rare occasions. Unknown `languageId` values fall back to `//`.
-- **Very large files:** editor highlighting skips aggressive processing above ~**1 MiB**; tag indexing also skips larger files for scanning.
-- **Tag index caps:** internal limits bound total entries, per-tag entries, and per-file matches so huge repos stay responsive; the tree may be **truncated** relative to a full textual search.
-- **Symbol-based insert:** if the language extension does not expose `Function`/`Method` symbols, insert falls back to the current line (or always when `useCurrentPosition` is `true`).
+- fast operational annotations
+- configurable documentation workflows
+- visible developer context
+- lightweight workspace memory
+- annotation discoverability
 
-## Installation & Usage
+The extension intentionally avoids becoming:
 
-1. Launch **Visual Studio Code** (or VSCodium, WindSurf, Cursor).
-2. Open the **Extensions** view (`Ctrl+Shift+X` on Windows/Linux or `⌘+Shift+X` on macOS).
-3. Search for **CodeMark+** or install from the [Marketplace](https://marketplace.visualstudio.com/items?itemName=imgildev.vscode-code-mark-plus).
-4. Click **Install** and reload the editor when prompted.
-5. **Open a folder or multi-root workspace** so the extension can load `codeMarkPlus` settings and file globs.
-6. Add or confirm `codeMarkPlus.highlightRules` in `settings.json` (see [Highlight Rules](#highlight-rules)).
-7. In the Explorer, open **Tag Browser**, use **Refresh** once, then expand **tag → file → occurrence** to navigate hits.
-8. Use the Command Palette category **CodeMark+** (or keybindings above) for comments, notes, and TODO actions.
+- a semantic graph platform
+- a PKM system
+- an AI orchestration layer
+- a heavyweight documentation framework
 
-## Performance & Behavior
+The focus remains on keeping annotations useful, accessible, and naturally integrated into development workflows.
 
-CodeMark+ is designed to be non-intrusive:
+## Best Use Cases
 
-- No background processing when idle
-- Features activate only when used
-- No automatic file creation
+CodeMark+ works especially well for:
+
+- TODO/FIXME workflows
+- lightweight technical debt tracking
+- operational implementation notes
+- structured code documentation
+- shared annotation conventions
+- large codebases with scattered comments
+- teams using annotation-driven workflows
+- developer-focused workspace documentation
+
+## Requirements
+
+- Visual Studio Code ^1.102.0
+
+## Extension Settings
+
+CodeMark+ includes configurable settings for:
+
+- annotation highlighting
+- template generation
+- wrapping behavior
+- Tag Browser behavior
+- Markdown workspace notes
+- formatting preferences
+- language-specific templates
+
+Open:
+
+```text
+Preferences → Settings → CodeMark+
+```
+
+to explore available configuration options.
 
 ## Contributing
 

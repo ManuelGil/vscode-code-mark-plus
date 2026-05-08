@@ -336,7 +336,7 @@ export const DEFAULT_SHOW_FILE_PATH_IN_RESULTS: boolean = true;
 /**
  * DEFAULT_NOTES_FOLDER: The default folder name for project notes.
  */
-export const DEFAULT_NOTES_FOLDER: string = '.codemark';
+export const DEFAULT_NOTES_FOLDER: string = '.code-mark';
 
 /**
  * DEFAULT_CREATE_DEFAULT_FILES_SETTING: Whether to create default notes files automatically.
@@ -346,12 +346,12 @@ export const DEFAULT_CREATE_DEFAULT_FILES_SETTING: boolean = false;
 /**
  * DEFAULT_TODO_FILE_NAME: Default filename for project TODO list.
  */
-export const DEFAULT_TODO_FILE_NAME: string = '(TODO).md';
+export const DEFAULT_TODO_FILE_NAME: string = 'todo.md';
 
 /**
  * DEFAULT_SCRATCHPAD_FILE_NAME: Default filename for project scratchpad.
  */
-export const DEFAULT_SCRATCHPAD_FILE_NAME: string = '(Scratchpad).md';
+export const DEFAULT_SCRATCHPAD_FILE_NAME: string = 'scratchpad.md';
 
 /**
  * DEFAULT_EXCLUDE_GLOBS: Default glob patterns to exclude from indexing.

@@ -380,7 +380,7 @@
 		},
 		"codeMarkPlus.notes.notesFolder": {
 			"type": "string",
-			"default": ".codemark",
+			"default": ".code-mark",
 			"scope": "resource",
 			"description": "Folder (relative to the workspace) where CodeMark+ stores notes and generated files."
 		},
@@ -392,13 +392,13 @@
 		},
 		"codeMarkPlus.notes.todoFileName": {
 			"type": "string",
-			"default": "(TODO).md",
+			"default": "todo.md",
 			"scope": "resource",
 			"description": "File name for the default TODO notes file."
 		},
 		"codeMarkPlus.notes.scratchpadFileName": {
 			"type": "string",
-			"default": "(Scratchpad).md",
+			"default": "scratchpad.md",
 			"scope": "resource",
 			"description": "File name for the default Scratchpad notes file."
 		},

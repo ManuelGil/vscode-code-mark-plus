@@ -371,7 +371,7 @@ export class ExtensionConfig {
    * @memberof ExtensionConfig
    * @example
    * console.log(config.notesFolder);
-   * @default '.codemark'
+   * @default '.code-mark'
    */
   notesFolder: string;
 
@@ -393,7 +393,7 @@ export class ExtensionConfig {
    * @memberof ExtensionConfig
    * @example
    * console.log(config.todoFileName);
-   * @default '(TODO).md'
+   * @default 'todo.md'
    */
   todoFileName: string;
 
@@ -404,7 +404,7 @@ export class ExtensionConfig {
    * @memberof ExtensionConfig
    * @example
    * console.log(config.scratchpadFileName);
-   * @default '(Scratchpad).md'
+   * @default 'scratchpad.md'
    */
   scratchpadFileName: string;
 
