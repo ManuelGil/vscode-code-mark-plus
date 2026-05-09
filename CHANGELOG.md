@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-05-08
+
+### Changed
+
+- Rename the extension to `CodeMark+ - Annotations & Comment Templates` for clearer positioning and improved discoverability.
+- Refine extension descriptions, keywords, and annotation terminology across the workspace experience.
+- Standardize annotation and TODO terminology across commands, comments, operations, prompts, and localized UI text.
+- Rename the default notes directory from `.codemark` to `.code-mark`.
+- Standardize default note filenames to `todo.md` and `scratchpad.md`.
+- Improve Tag Browser terminology and navigation flow for a more cohesive annotation workflow.
+- Enhance the default TODO and Scratchpad templates to provide clearer onboarding and lightweight workspace documentation guidance.
+- Improve consistency across prompts, placeholders, notifications, and workflow interactions.
+- Update localization resources to align with the new annotation terminology and workflow naming conventions.
+
 ## [1.5.0] - 2026-04-30
 
 ### Changed
@@ -89,7 +103,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release of CodeMark+ extension
 
-[Unreleased]: https://github.com/ManuelGil/vscode-code-mark-plus/compare/v1.5.0...HEAD
+[Unreleased]: https://github.com/ManuelGil/vscode-code-mark-plus/compare/v1.6.0...HEAD
+[1.6.0]: https://github.com/ManuelGil/vscode-code-mark-plus/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/ManuelGil/vscode-code-mark-plus/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/ManuelGil/vscode-code-mark-plus/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/ManuelGil/vscode-code-mark-plus/compare/v1.2.0...v1.3.0

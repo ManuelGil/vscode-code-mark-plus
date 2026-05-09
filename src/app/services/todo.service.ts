@@ -21,7 +21,7 @@ export class TodoService {
 
   constructor(readonly config: ExtensionConfig) {}
 
-  async initializeNotesDirectory(createMissing = true): Promise<void> {
+  async initializeNotesDirectory(): Promise<void> {
     const workspaceRoot = getWorkspaceRoot(this.config);
     if (!workspaceRoot) {
       return;
@@ -33,13 +33,10 @@ export class TodoService {
     );
 
     try {
-      if (createMissing) {
+      if (this.config.createDefaultFiles) {
         // Create the notes directory only when a command explicitly needs it.
         await workspace.fs.createDirectory(this.notesDir);
-
-        if (this.config.createDefaultFiles) {
-          await this.createDefaultFiles();
-        }
+        await this.createDefaultFiles();
 
         return;
       }
