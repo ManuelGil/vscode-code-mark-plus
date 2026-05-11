@@ -552,7 +552,7 @@ export class HighlightController {
         const lineOffset = document.offsetAt(new Position(lineIndex, 0));
 
         for (const rule of rules) {
-          // Safety check — this should not be necessary due to prior filtering,
+          // Safety check - this should not be necessary due to prior filtering,
           // but strict TypeScript checks require this guard
           if (rule.regex === null) {
             continue;

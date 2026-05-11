@@ -32,6 +32,7 @@
 	"codeMarkPlus.customTemplates.template.description": "La plantilla del mensaje del comentario. Use variables Mustache como {{{commentMessagePrefix}}}, {{{commentMessageSuffix}}}, {{{fileName}}}, {{{author}}}",
 	"codeMarkPlus.customTemplates.description": "Core: plantillas Mustache por lenguaje que controlan los bloques de comentario generados. Defina una plantilla por lenguaje para personalizar inserción y metadatos.",
 	"codeMarkPlus.insertComment.title": "Añadir comentario de anotación",
+	"codeMarkPlus.replaceAnnotationTag.title": "Reemplazar etiqueta de anotación",
 	"codeMarkPlus.removeSingleLineComments.title": "Limpiar comentarios de anotación (selección)",
 	"codeMarkPlus.removeAllSingleLineComments.title": "Limpiar comentarios de anotación (todos)",
 	"codeMarkPlus.changeWorkspace.title": "Cambiar carpeta de trabajo de anotaciones",

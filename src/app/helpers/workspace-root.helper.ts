@@ -12,11 +12,11 @@ import { ExtensionConfig } from '../configs';
  * Returns the workspace root path used as the base for all file operations.
  *
  * Resolution order:
- * 1. `config.workspaceSelection` — set from the workspace folder the user selected
+ * 1. `config.workspaceSelection` - set from the workspace folder the user selected
  *    via the sidebar (persisted in global state).
- * 2. First VS Code workspace folder — fallback for single-folder workspaces
+ * 2. First VS Code workspace folder - fallback for single-folder workspaces
  *    or when no explicit selection has been made.
- * 3. `undefined` — when no workspace is open.
+ * 3. `undefined` - when no workspace is open.
  *
  * @param config - The active extension configuration instance.
  * @returns Absolute filesystem path to the workspace root,

@@ -15,6 +15,7 @@ It combines:
 - **live annotation highlighting**
 - **lightweight shared notes**
 - **developer-focused TODO workflows**
+- Replace annotation tags within the active editor selection.
 
 into a cohesive annotation system designed for real-world development workflows.
 
@@ -65,7 +66,7 @@ It provides:
 - shared TODO workflows
 - configurable annotation formatting and behaviors
 
-The extension is designed to complement your existing development workflow — not replace your formatter, language server, issue tracker, or documentation platform.
+The extension is designed to complement your existing development workflow - not replace your formatter, language server, issue tracker, or documentation platform.
 
 ## Core Workflow
 
@@ -117,7 +118,7 @@ It is **not**:
 - a YAML knowledge framework
 - a replacement for full documentation platforms
 
-Annotations should feel fast, useful, and natural — not ceremonial.
+Annotations should feel fast, useful, and natural - not ceremonial.
 
 ## Core Features
 
@@ -227,7 +228,7 @@ Examples include:
 
 These notes are intentionally lightweight and workspace-oriented.
 
-They are designed to complement annotation workflows — not replace full documentation systems.
+They are designed to complement annotation workflows - not replace full documentation systems.
 
 ## Common Workflows
 

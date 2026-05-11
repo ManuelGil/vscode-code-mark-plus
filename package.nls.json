@@ -32,6 +32,7 @@
 	"codeMarkPlus.customTemplates.template.description": "The comment message template. Use Mustache variables like {{{commentMessagePrefix}}}, {{{commentMessageSuffix}}}, {{{fileName}}}, {{{author}}}",
 	"codeMarkPlus.customTemplates.description": "Core: language-aware Mustache templates that control generated comment blocks. Define a template per language to customize insertion and metadata.",
 	"codeMarkPlus.insertComment.title": "Add annotation comment",
+	"codeMarkPlus.replaceAnnotationTag.title": "Replace annotation tag",
 	"codeMarkPlus.removeSingleLineComments.title": "Clean annotation comments (pick)",
 	"codeMarkPlus.removeAllSingleLineComments.title": "Clean annotation comments (all)",
 	"codeMarkPlus.changeWorkspace.title": "Change annotation workspace folder",

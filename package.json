@@ -2,7 +2,7 @@
 	"name": "vscode-code-mark-plus",
 	"displayName": "CodeMark+ - Annotations & Comment Templates",
 	"description": "Lightweight, developer-focused tools for fast in-code annotations: configurable comment templates, tag highlighting, a Tag Browser, and a workspace TODO file. Designed for quick annotation workflows and reproducible comment generation.",
-	"version": "1.6.0",
+	"version": "1.7.0",
 	"icon": "icon.png",
 	"license": "MIT",
 	"publisher": "imgildev",
@@ -551,6 +551,11 @@
 				"category": "CodeMark+"
 			},
 			{
+				"command": "codeMarkPlus.replaceAnnotationTag",
+				"title": "%codeMarkPlus.replaceAnnotationTag.title%",
+				"category": "CodeMark+"
+			},
+			{
 				"command": "codeMarkPlus.removeSingleLineComments",
 				"title": "%codeMarkPlus.removeSingleLineComments.title%",
 				"category": "CodeMark+"
@@ -596,14 +601,19 @@
 					"group": "navigation@10"
 				},
 				{
+					"command": "codeMarkPlus.replaceAnnotationTag",
+					"when": "editorTextFocus && editorHasSelection",
+					"group": "navigation@11"
+				},
+				{
 					"command": "codeMarkPlus.removeSingleLineComments",
 					"when": "editorTextFocus",
-					"group": "navigation@11"
+					"group": "navigation@12"
 				},
 				{
 					"command": "codeMarkPlus.removeAllSingleLineComments",
 					"when": "editorTextFocus",
-					"group": "navigation@12"
+					"group": "navigation@13"
 				}
 			],
 			"view/title": [
@@ -692,13 +702,13 @@
 		"prepare": "husky"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.4.14",
+		"@biomejs/biome": "2.4.15",
 		"@commitlint/cli": "^19.8.1",
 		"@commitlint/config-conventional": "^19.8.1",
 		"@types/mocha": "^10.0.10",
 		"@types/mustache": "^4.2.6",
 		"@types/node": "^22.19.18",
-		"@types/vscode": "^1.106.0",
+		"@types/vscode": "^1.102.0",
 		"@vscode/l10n-dev": "^0.0.35",
 		"@vscode/test-cli": "^0.0.12",
 		"@vscode/test-electron": "^2.5.2",

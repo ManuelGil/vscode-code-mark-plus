@@ -454,6 +454,16 @@ export class ExtensionRuntime {
         },
       },
       {
+        id: CommandIds.ReplaceAnnotationTag,
+        handler: () => {
+          if (!this.isExtensionEnabled()) {
+            return;
+          }
+
+          this.commentController?.replaceAnnotationTagInSelection();
+        },
+      },
+      {
         id: CommandIds.RemoveSingleLineComments,
         handler: () => {
           if (!this.isExtensionEnabled()) {

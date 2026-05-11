@@ -3,6 +3,7 @@ export enum CommandIds {
   RefreshTagBrowserList = 'tagBrowserView.refreshList',
   OpenTagBrowserFile = 'tagBrowserView.openFile',
   InsertComment = 'insertComment',
+  ReplaceAnnotationTag = 'replaceAnnotationTag',
   RemoveSingleLineComments = 'removeSingleLineComments',
   RemoveAllSingleLineComments = 'removeAllSingleLineComments',
   AppendToTodoFile = 'appendToTodoFile',

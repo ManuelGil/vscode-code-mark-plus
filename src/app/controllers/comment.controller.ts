@@ -10,7 +10,11 @@ import {
   window,
 } from 'vscode';
 
-import { relativePath } from '../helpers';
+import {
+  escapeRegExp,
+  getNormalizedHighlightRules,
+  relativePath,
+} from '../helpers';
 import { CommentService } from '../services';
 import { CommentData } from '../types';
 
@@ -297,7 +301,190 @@ export class CommentController {
     }
   }
 
+  /**
+   * The replaceAnnotationTagInSelection method.
+   * Replace a selected annotation tag only within the active editor selection.
+   * @function replaceAnnotationTagInSelection
+   * @public
+   * @async
+   * @memberof CommentController
+   * @example
+   * controller.replaceAnnotationTagInSelection();
+   *
+   * @returns {Promise<void>} - The promise with no return value
+   */
+  async replaceAnnotationTagInSelection(): Promise<void> {
+    try {
+      const editor = window.activeTextEditor;
+
+      if (!editor) {
+        window.showErrorMessage(l10n.t('No active editor available!'));
+        return;
+      }
+
+      if (editor.selection.isEmpty) {
+        window.showInformationMessage(
+          l10n.t('Select text first to replace annotation tags'),
+        );
+        return;
+      }
+
+      const document = editor.document;
+      const selection = editor.selection;
+      const selectionText = document.getText(selection);
+      const annotationTagRules = this.getAnnotationTagRules(
+        document.languageId,
+      );
+
+      if (annotationTagRules.length === 0) {
+        window.showInformationMessage(
+          l10n.t('No annotation tags found in the selection'),
+        );
+        return;
+      }
+
+      const sourceTags = annotationTagRules
+        .filter(({ regex }) => {
+          regex.lastIndex = 0;
+          return regex.test(selectionText);
+        })
+        .map(({ tag }) => tag);
+
+      if (sourceTags.length === 0) {
+        window.showInformationMessage(
+          l10n.t('No annotation tags found in the selection'),
+        );
+        return;
+      }
+
+      const sourceTag = await window.showQuickPick(sourceTags, {
+        placeHolder: l10n.t('Select source tag'),
+      });
+
+      if (!sourceTag) {
+        return;
+      }
+
+      const targetTags = annotationTagRules
+        .map(({ tag }) => tag)
+        .filter((tag) => tag !== sourceTag);
+
+      if (targetTags.length === 0) {
+        window.showInformationMessage(
+          l10n.t('No replacement annotation tags available'),
+        );
+        return;
+      }
+
+      const targetTag = await window.showQuickPick(targetTags, {
+        placeHolder: l10n.t('Select target tag'),
+      });
+
+      if (!targetTag) {
+        return;
+      }
+
+      const sourceRule = annotationTagRules.find(
+        ({ tag }) => tag === sourceTag,
+      );
+      if (!sourceRule) {
+        window.showInformationMessage(
+          l10n.t('No annotation tags found in the selection'),
+        );
+        return;
+      }
+
+      const selectionOffset = document.offsetAt(selection.start);
+      const matches: Array<{ range: Range; replacement: string }> = [];
+
+      sourceRule.regex.lastIndex = 0;
+      let match: RegExpExecArray | null;
+      while ((match = sourceRule.regex.exec(selectionText)) !== null) {
+        const start = document.positionAt(selectionOffset + match.index);
+        const end = document.positionAt(
+          selectionOffset + match.index + match[0].length,
+        );
+        const suffix = match[0].endsWith(':') ? ':' : '';
+
+        matches.push({
+          range: new Range(start, end),
+          replacement: `${targetTag}${suffix}`,
+        });
+
+        if (match[0].length === 0) {
+          sourceRule.regex.lastIndex++;
+        }
+      }
+
+      if (matches.length === 0) {
+        window.showInformationMessage(
+          l10n.t('No annotation tags found in the selection'),
+        );
+        return;
+      }
+
+      await editor.edit((editBuilder) => {
+        const sorted = matches.sort((leftMatch, rightMatch) =>
+          rightMatch.range.start.compareTo(leftMatch.range.start),
+        );
+
+        for (const item of sorted) {
+          editBuilder.replace(item.range, item.replacement);
+        }
+      });
+
+      window.showInformationMessage(
+        l10n.t('Selected annotation tag was replaced within the selection'),
+      );
+    } catch (error) {
+      console.error('Error replacing annotation tag:', error);
+      window.showErrorMessage(
+        l10n.t('An unexpected error occurred while replacing annotation tags'),
+      );
+    }
+  }
+
   // Private methods
+
+  private getAnnotationTagRules(
+    languageId: string,
+  ): Array<{ tag: string; regex: RegExp }> {
+    const tagRules = new Map<string, { tag: string; regex: RegExp }>();
+
+    for (const rule of getNormalizedHighlightRules(this.service.config)) {
+      if (!rule.keyword) {
+        continue;
+      }
+
+      if (rule.languageIds && rule.languageIds.length > 0) {
+        if (!rule.languageIds.includes(languageId)) {
+          continue;
+        }
+      }
+
+      if (tagRules.has(rule.keyword)) {
+        continue;
+      }
+
+      const escapedTag = escapeRegExp(rule.keyword);
+      const source =
+        rule.matchMode === 'substring'
+          ? `${escapedTag}:?`
+          : `\\b${escapedTag}\\b:?`;
+
+      let flags = 'g';
+      if (rule.caseSensitive === false) {
+        flags += 'i';
+      }
+
+      tagRules.set(rule.keyword, {
+        tag: rule.keyword,
+        regex: new RegExp(source, flags),
+      });
+    }
+
+    return [...tagRules.values()];
+  }
 
   /**
    * The getFunctionInfo method.
