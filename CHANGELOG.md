@@ -9,14 +9,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.8.0] - 2026-05-14
+
+### Added
+
+- Add explicit cleanup scopes to `removeSingleLineComments` for single-line comments.
+- Allow cleaning all comments, annotation comments only, or comments matching specific annotation tags.
+
+### Changed
+
+- Update `findSingleLineComments` to identify annotation tags for each detected comment.
+- Refine `removeSingleLineComments` to use explicit cleanup scopes instead of implicit filtering behavior.
+
 ## [1.7.0] - 2026-05-10
 
 ### Changed
 
 - Add `ReplaceAnnotationTag` to `CommandIds` enum
 - Implement `replaceAnnotationTagInSelection` method in `CommentController` to replace selected annotation tags within the active editor.
-- Introduce `getAnnotationTagRules` method to retrieve annotation tag rules based on the current language
-- Update extension runtime to register the new command handler for replacing annotation tags
+- Introduce `replaceAnnotationTagInActiveFile` method to replace annotation tags across the entire active file.
+- Introduce `getAnnotationTagRules` method to retrieve annotation tag rules based on the current language.
+- Update extension runtime to register command handlers for replacing annotation tags.
 
 ## [1.6.0] - 2026-05-08
 
@@ -112,7 +125,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release of CodeMark+ extension
 
-[Unreleased]: https://github.com/ManuelGil/vscode-code-mark-plus/compare/v1.7.0...HEAD
+[Unreleased]: https://github.com/ManuelGil/vscode-code-mark-plus/compare/v1.8.0...HEAD
+[1.8.0]: https://github.com/ManuelGil/vscode-code-mark-plus/compare/v1.7.0...v1.8.0
 [1.7.0]: https://github.com/ManuelGil/vscode-code-mark-plus/compare/v1.6.0...v1.7.0
 [1.6.0]: https://github.com/ManuelGil/vscode-code-mark-plus/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/ManuelGil/vscode-code-mark-plus/compare/v1.4.0...v1.5.0

@@ -147,7 +147,7 @@ export class CommentController {
 
   /**
    * The removeSingleLineComments method.
-   * Remove single-line comments from the active text editor.
+   * Remove single-line comments from the active text editor with optional tag filtering.
    * @function removeSingleLineComments
    * @public
    * @async
@@ -173,13 +173,83 @@ export class CommentController {
         editor.document.languageId,
       );
       if (comments.length === 0) {
-        window.showInformationMessage(
-          l10n.t('No annotation comments found to clean'),
-        );
+        window.showInformationMessage(l10n.t('No comments found to clean'));
         return;
       }
 
-      const picks = comments.map((comment) => ({
+      const taggedComments = comments.filter((comment) => comment.tag);
+      const tags = Array.from(
+        new Set(taggedComments.map((comment) => comment.tag as string)),
+      ).sort();
+
+      let commentsToDisplay = comments;
+      let cleanupScope: 'all' | 'annotation' | 'tags' = 'all';
+
+      if (tags.length > 0) {
+        const filterOptions = [
+          { label: l10n.t('All comments'), value: 'all' },
+          { label: l10n.t('Annotation comments only'), value: 'annotation' },
+          {
+            label: l10n.t('Select specific annotation tags'),
+            value: 'tags',
+          },
+        ];
+
+        const filterChoice = await window.showQuickPick(filterOptions, {
+          placeHolder: l10n.t('Cleanup scope'),
+        });
+
+        if (!filterChoice) {
+          return;
+        }
+
+        cleanupScope = filterChoice.value as 'all' | 'annotation' | 'tags';
+
+        if (cleanupScope === 'annotation') {
+          commentsToDisplay = taggedComments;
+        } else if (cleanupScope === 'tags') {
+          const tagPicks = tags.map((tag) => ({
+            label: tag,
+            picked: true,
+          }));
+
+          const selectedTagPicks = await window.showQuickPick(tagPicks, {
+            canPickMany: true,
+            placeHolder: l10n.t('Select annotation tags to clean'),
+          });
+
+          if (!selectedTagPicks || selectedTagPicks.length === 0) {
+            window.showInformationMessage(
+              l10n.t('No annotation tags selected for cleaning'),
+            );
+            return;
+          }
+
+          const selectedTags = new Set(
+            selectedTagPicks.map((pick) => pick.label),
+          );
+          commentsToDisplay = comments.filter((comment) =>
+            comment.tag ? selectedTags.has(comment.tag) : false,
+          );
+        }
+      }
+
+      if (commentsToDisplay.length === 0) {
+        if (cleanupScope === 'annotation') {
+          window.showInformationMessage(
+            l10n.t('No annotation comments found to clean'),
+          );
+        } else if (cleanupScope === 'tags') {
+          window.showInformationMessage(
+            l10n.t('No annotation comments found for the selected tags'),
+          );
+        } else {
+          window.showInformationMessage(l10n.t('No comments found to clean'));
+        }
+        return;
+      }
+
+      const picks = commentsToDisplay.map((comment) => ({
         label: l10n.t('Line {0}: {1}', String(comment.line), comment.preview),
         description: comment.fullText,
         comment,
@@ -187,12 +257,19 @@ export class CommentController {
 
       const selected = await window.showQuickPick(picks, {
         canPickMany: true,
-        placeHolder: l10n.t('Select annotation comments to clean'),
+        placeHolder:
+          cleanupScope === 'all'
+            ? l10n.t('Select comments to clean')
+            : l10n.t('Select annotation comments to clean'),
       });
       if (!selected || selected.length === 0) {
-        window.showInformationMessage(
-          l10n.t('No annotation comments selected'),
-        );
+        if (cleanupScope === 'all') {
+          window.showInformationMessage(l10n.t('No comments selected'));
+        } else {
+          window.showInformationMessage(
+            l10n.t('No annotation comments selected'),
+          );
+        }
         return;
       }
 
@@ -221,7 +298,9 @@ export class CommentController {
       });
 
       window.showInformationMessage(
-        l10n.t('Selected annotation comments were cleaned'),
+        cleanupScope === 'all'
+          ? l10n.t('Selected comments were cleaned')
+          : l10n.t('Selected annotation comments were cleaned'),
       );
     } catch (error) {
       console.error('Error removing comments:', error);
@@ -259,9 +338,7 @@ export class CommentController {
       );
 
       if (comments.length === 0) {
-        window.showInformationMessage(
-          l10n.t('No annotation comments found to clean'),
-        );
+        window.showInformationMessage(l10n.t('No comments found to clean'));
         return;
       }
 
@@ -290,9 +367,7 @@ export class CommentController {
         });
       });
 
-      window.showInformationMessage(
-        l10n.t('All single-line annotation comments were cleaned'),
-      );
+      window.showInformationMessage(l10n.t('All comments were cleaned'));
     } catch (error) {
       console.error('Error removing all comments:', error);
       window.showErrorMessage(
@@ -329,111 +404,10 @@ export class CommentController {
         return;
       }
 
-      const document = editor.document;
-      const selection = editor.selection;
-      const selectionText = document.getText(selection);
-      const annotationTagRules = this.getAnnotationTagRules(
-        document.languageId,
-      );
-
-      if (annotationTagRules.length === 0) {
-        window.showInformationMessage(
-          l10n.t('No annotation tags found in the selection'),
-        );
-        return;
-      }
-
-      const sourceTags = annotationTagRules
-        .filter(({ regex }) => {
-          regex.lastIndex = 0;
-          return regex.test(selectionText);
-        })
-        .map(({ tag }) => tag);
-
-      if (sourceTags.length === 0) {
-        window.showInformationMessage(
-          l10n.t('No annotation tags found in the selection'),
-        );
-        return;
-      }
-
-      const sourceTag = await window.showQuickPick(sourceTags, {
-        placeHolder: l10n.t('Select source tag'),
-      });
-
-      if (!sourceTag) {
-        return;
-      }
-
-      const targetTags = annotationTagRules
-        .map(({ tag }) => tag)
-        .filter((tag) => tag !== sourceTag);
-
-      if (targetTags.length === 0) {
-        window.showInformationMessage(
-          l10n.t('No replacement annotation tags available'),
-        );
-        return;
-      }
-
-      const targetTag = await window.showQuickPick(targetTags, {
-        placeHolder: l10n.t('Select target tag'),
-      });
-
-      if (!targetTag) {
-        return;
-      }
-
-      const sourceRule = annotationTagRules.find(
-        ({ tag }) => tag === sourceTag,
-      );
-      if (!sourceRule) {
-        window.showInformationMessage(
-          l10n.t('No annotation tags found in the selection'),
-        );
-        return;
-      }
-
-      const selectionOffset = document.offsetAt(selection.start);
-      const matches: Array<{ range: Range; replacement: string }> = [];
-
-      sourceRule.regex.lastIndex = 0;
-      let match: RegExpExecArray | null;
-      while ((match = sourceRule.regex.exec(selectionText)) !== null) {
-        const start = document.positionAt(selectionOffset + match.index);
-        const end = document.positionAt(
-          selectionOffset + match.index + match[0].length,
-        );
-        const suffix = match[0].endsWith(':') ? ':' : '';
-
-        matches.push({
-          range: new Range(start, end),
-          replacement: `${targetTag}${suffix}`,
-        });
-
-        if (match[0].length === 0) {
-          sourceRule.regex.lastIndex++;
-        }
-      }
-
-      if (matches.length === 0) {
-        window.showInformationMessage(
-          l10n.t('No annotation tags found in the selection'),
-        );
-        return;
-      }
-
-      await editor.edit((editBuilder) => {
-        const sorted = matches.sort((leftMatch, rightMatch) =>
-          rightMatch.range.start.compareTo(leftMatch.range.start),
-        );
-
-        for (const item of sorted) {
-          editBuilder.replace(item.range, item.replacement);
-        }
-      });
-
-      window.showInformationMessage(
+      await this.replaceAnnotationTagInRange(
+        editor,
+        editor.selection,
+        l10n.t('No annotation tags found in the selection'),
         l10n.t('Selected annotation tag was replaced within the selection'),
       );
     } catch (error) {
@@ -442,6 +416,153 @@ export class CommentController {
         l10n.t('An unexpected error occurred while replacing annotation tags'),
       );
     }
+  }
+
+  /**
+   * The replaceAnnotationTagInActiveFile method.
+   * Replace an annotation tag across the whole active editor document.
+   * @function replaceAnnotationTagInActiveFile
+   * @public
+   * @async
+   * @memberof CommentController
+   * @example
+   * controller.replaceAnnotationTagInActiveFile();
+   *
+   * @returns {Promise<void>} - The promise with no return value
+   */
+  async replaceAnnotationTagInActiveFile(): Promise<void> {
+    try {
+      const editor = window.activeTextEditor;
+
+      if (!editor) {
+        window.showErrorMessage(l10n.t('No active editor available!'));
+        return;
+      }
+
+      const document = editor.document;
+
+      if (document.lineCount === 0) {
+        window.showInformationMessage(
+          l10n.t('No annotation tags found in the active file'),
+        );
+        return;
+      }
+
+      const endPosition = document.lineAt(document.lineCount - 1).range.end;
+      const fullDocumentRange = new Range(new Position(0, 0), endPosition);
+
+      await this.replaceAnnotationTagInRange(
+        editor,
+        fullDocumentRange,
+        l10n.t('No annotation tags found in the active file'),
+        l10n.t('Selected annotation tag was replaced in the active file'),
+      );
+    } catch (error) {
+      console.error('Error replacing annotation tag in active file:', error);
+      window.showErrorMessage(
+        l10n.t('An unexpected error occurred while replacing annotation tags'),
+      );
+    }
+  }
+
+  private async replaceAnnotationTagInRange(
+    editor: TextEditor,
+    targetRange: Range,
+    notFoundMessage: string,
+    successMessage: string,
+  ): Promise<void> {
+    const document = editor.document;
+    const targetText = document.getText(targetRange);
+    const annotationTagRules = this.getAnnotationTagRules(document.languageId);
+
+    if (annotationTagRules.length === 0) {
+      window.showInformationMessage(notFoundMessage);
+      return;
+    }
+
+    const sourceTags = annotationTagRules
+      .filter(({ regex }) => {
+        regex.lastIndex = 0;
+        return regex.test(targetText);
+      })
+      .map(({ tag }) => tag);
+
+    if (sourceTags.length === 0) {
+      window.showInformationMessage(notFoundMessage);
+      return;
+    }
+
+    const sourceTag = await window.showQuickPick(sourceTags, {
+      placeHolder: l10n.t('Select source tag'),
+    });
+
+    if (!sourceTag) {
+      return;
+    }
+
+    const targetTags = annotationTagRules
+      .map(({ tag }) => tag)
+      .filter((tag) => tag !== sourceTag);
+
+    if (targetTags.length === 0) {
+      window.showInformationMessage(
+        l10n.t('No replacement annotation tags available'),
+      );
+      return;
+    }
+
+    const targetTag = await window.showQuickPick(targetTags, {
+      placeHolder: l10n.t('Select target tag'),
+    });
+
+    if (!targetTag) {
+      return;
+    }
+
+    const sourceRule = annotationTagRules.find(({ tag }) => tag === sourceTag);
+    if (!sourceRule) {
+      window.showInformationMessage(notFoundMessage);
+      return;
+    }
+
+    const targetOffset = document.offsetAt(targetRange.start);
+    const matches: Array<{ range: Range; replacement: string }> = [];
+
+    sourceRule.regex.lastIndex = 0;
+    let match: RegExpExecArray | null;
+    while ((match = sourceRule.regex.exec(targetText)) !== null) {
+      const start = document.positionAt(targetOffset + match.index);
+      const end = document.positionAt(
+        targetOffset + match.index + match[0].length,
+      );
+      const suffix = match[0].endsWith(':') ? ':' : '';
+
+      matches.push({
+        range: new Range(start, end),
+        replacement: `${targetTag}${suffix}`,
+      });
+
+      if (match[0].length === 0) {
+        sourceRule.regex.lastIndex++;
+      }
+    }
+
+    if (matches.length === 0) {
+      window.showInformationMessage(notFoundMessage);
+      return;
+    }
+
+    await editor.edit((editBuilder) => {
+      const sorted = matches.sort((leftMatch, rightMatch) =>
+        rightMatch.range.start.compareTo(leftMatch.range.start),
+      );
+
+      for (const item of sorted) {
+        editBuilder.replace(item.range, item.replacement);
+      }
+    });
+
+    window.showInformationMessage(successMessage);
   }
 
   // Private methods

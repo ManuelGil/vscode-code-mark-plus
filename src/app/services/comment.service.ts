@@ -569,7 +569,8 @@ export class CommentService {
    *   line: number;
    *   preview: string;
    *   fullText: string;
-   * }>} - The array of single line comments
+   *   tag?: string;
+   * }>} - The array of single line comments with optional tag
    */
   findSingleLineComments(
     code: string,
@@ -580,6 +581,7 @@ export class CommentService {
     line: number;
     preview: string;
     fullText: string;
+    tag?: string;
   }> {
     try {
       const marker = getLineCommentToken(languageId ?? '');
@@ -592,6 +594,7 @@ export class CommentService {
         line: number;
         preview: string;
         fullText: string;
+        tag?: string;
       }> = [];
 
       let match: RegExpExecArray | null;
@@ -606,7 +609,8 @@ export class CommentService {
             .replace(/\n/g, '')
             .trim() + '... ';
         const fullText = code.slice(start, end).trim();
-        commentRanges.push({ start, end, line, preview, fullText });
+        const tag = this.extractTagFromComment(fullText, languageId);
+        commentRanges.push({ start, end, line, preview, fullText, tag });
         if (match[0].length === 0) {
           // Zero-length safeguard to prevent potential infinite loops
           markerPattern.lastIndex++;
@@ -620,6 +624,82 @@ export class CommentService {
   }
 
   // Private methods
+
+  /**
+   * Extracts the annotation tag (TODO, FIXME, NOTE, etc.) from a comment.
+   * @function extractTagFromComment
+   * @private
+   * @memberof CommentService
+   * @param {string} commentText - The full comment text including marker
+   * @param {string} [languageId] - VS Code document language id
+   * @returns {string | undefined} - The extracted tag or undefined if no tag found
+   */
+  private extractTagFromComment(
+    commentText: string,
+    languageId?: string,
+  ): string | undefined {
+    try {
+      const { highlightRules } = this.config;
+
+      if (!highlightRules || highlightRules.length === 0) {
+        return undefined;
+      }
+
+      for (const rule of highlightRules) {
+        if (!rule.keyword) {
+          continue;
+        }
+
+        // Filter by language if specified
+        if (rule.languageIds && rule.languageIds.length > 0) {
+          if (!rule.languageIds.includes(languageId ?? '')) {
+            continue;
+          }
+        }
+
+        // Check if keyword appears in comment
+        if (rule.matchMode === 'regex' && rule.pattern) {
+          try {
+            const regex = new RegExp(rule.pattern, 'gi');
+            if (regex.test(commentText)) {
+              return rule.keyword;
+            }
+          } catch {
+            // Skip malformed regex
+          }
+        } else {
+          // Keyword or substring mode
+          const searchText =
+            rule.caseSensitive === false
+              ? commentText.toLowerCase()
+              : commentText;
+          const searchKeyword =
+            rule.caseSensitive === false
+              ? rule.keyword.toLowerCase()
+              : rule.keyword;
+
+          if (rule.matchMode === 'substring') {
+            if (searchText.includes(searchKeyword)) {
+              return rule.keyword;
+            }
+          } else {
+            // word mode (default)
+            const wordBoundaryRegex = new RegExp(
+              `\\b${searchKeyword}\\b`,
+              rule.caseSensitive === false ? 'i' : '',
+            );
+            if (wordBoundaryRegex.test(commentText)) {
+              return rule.keyword;
+            }
+          }
+        }
+      }
+      return undefined;
+    } catch (error) {
+      console.error('Error extracting tag from comment:', error);
+      return undefined;
+    }
+  }
 
   /**
    * The wrapContent method.

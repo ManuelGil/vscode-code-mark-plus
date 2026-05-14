@@ -454,13 +454,23 @@ export class ExtensionRuntime {
         },
       },
       {
-        id: CommandIds.ReplaceAnnotationTag,
+        id: CommandIds.ReplaceAnnotationTagInSelection,
         handler: () => {
           if (!this.isExtensionEnabled()) {
             return;
           }
 
           this.commentController?.replaceAnnotationTagInSelection();
+        },
+      },
+      {
+        id: CommandIds.ReplaceAnnotationTagInFile,
+        handler: () => {
+          if (!this.isExtensionEnabled()) {
+            return;
+          }
+
+          this.commentController?.replaceAnnotationTagInActiveFile();
         },
       },
       {

@@ -16,6 +16,7 @@ It combines:
 - **lightweight shared notes**
 - **developer-focused TODO workflows**
 - Replace annotation tags within the active editor selection.
+- Replace annotation tags across the active file.
 
 into a cohesive annotation system designed for real-world development workflows.
 

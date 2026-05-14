@@ -2,7 +2,7 @@
 	"name": "vscode-code-mark-plus",
 	"displayName": "CodeMark+ - Annotations & Comment Templates",
 	"description": "Lightweight, developer-focused tools for fast in-code annotations: configurable comment templates, tag highlighting, a Tag Browser, and a workspace TODO file. Designed for quick annotation workflows and reproducible comment generation.",
-	"version": "1.7.0",
+	"version": "1.8.0",
 	"icon": "icon.png",
 	"license": "MIT",
 	"publisher": "imgildev",
@@ -551,8 +551,13 @@
 				"category": "CodeMark+"
 			},
 			{
-				"command": "codeMarkPlus.replaceAnnotationTag",
-				"title": "%codeMarkPlus.replaceAnnotationTag.title%",
+				"command": "codeMarkPlus.replaceAnnotationTagInSelection",
+				"title": "%codeMarkPlus.replaceAnnotationTagInSelection.title%",
+				"category": "CodeMark+"
+			},
+			{
+				"command": "codeMarkPlus.replaceAnnotationTagInFile",
+				"title": "%codeMarkPlus.replaceAnnotationTagInFile.title%",
 				"category": "CodeMark+"
 			},
 			{
@@ -601,8 +606,13 @@
 					"group": "navigation@10"
 				},
 				{
-					"command": "codeMarkPlus.replaceAnnotationTag",
+					"command": "codeMarkPlus.replaceAnnotationTagInSelection",
 					"when": "editorTextFocus && editorHasSelection",
+					"group": "navigation@11"
+				},
+				{
+					"command": "codeMarkPlus.replaceAnnotationTagInFile",
+					"when": "editorTextFocus",
 					"group": "navigation@11"
 				},
 				{
@@ -707,7 +717,7 @@
 		"@commitlint/config-conventional": "^19.8.1",
 		"@types/mocha": "^10.0.10",
 		"@types/mustache": "^4.2.6",
-		"@types/node": "^22.19.18",
+		"@types/node": "^22.19.19",
 		"@types/vscode": "^1.102.0",
 		"@vscode/l10n-dev": "^0.0.35",
 		"@vscode/test-cli": "^0.0.12",
@@ -729,8 +739,7 @@
 	"pnpm": {
 		"overrides": {
 			"diff@>=6.0.0 <8.0.3": ">=8.0.3",
-			"serialize-javascript@<7.0.5": ">=7.0.5",
-			"fast-uri@<=3.1.1": ">=3.1.2"
+			"serialize-javascript@<7.0.5": ">=7.0.5"
 		},
 		"onlyBuiltDependencies": [
 			"esbuild"
