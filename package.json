@@ -2,7 +2,7 @@
 	"name": "vscode-code-mark-plus",
 	"displayName": "CodeMark+ - Annotations & Comment Templates",
 	"description": "Lightweight, developer-focused tools for fast in-code annotations: configurable comment templates, tag highlighting, a Tag Browser, and a workspace TODO file. Designed for quick annotation workflows and reproducible comment generation.",
-	"version": "1.8.0",
+	"version": "1.9.0",
 	"icon": "icon.png",
 	"license": "MIT",
 	"publisher": "imgildev",
