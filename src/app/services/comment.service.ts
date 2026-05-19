@@ -1,6 +1,7 @@
 import mustache from 'mustache';
+
 import { ExtensionConfig } from '../configs';
-import { getLineCommentToken } from '../helpers/line-comment-token.helper';
+import { getLineCommentToken } from '../helpers';
 import { CommentData } from '../types';
 
 /**

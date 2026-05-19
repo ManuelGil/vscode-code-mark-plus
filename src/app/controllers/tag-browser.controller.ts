@@ -45,8 +45,9 @@ export class TagBrowserController {
   // -----------------------------------------------------------------
   // Constructor
   // -----------------------------------------------------------------
-
-  constructor(readonly config: ExtensionConfig) {}
+  constructor(readonly config: ExtensionConfig) {
+    // constructor left intentionally minimal
+  }
 
   // -----------------------------------------------------------------
   // Methods
@@ -215,6 +216,10 @@ export class TagBrowserController {
         editor.revealRange(targetRange, TextEditorRevealType.InCenter);
       }
     } catch (error) {
+      console.error(
+        '[CodeMark+] Runtime failure in TagBrowserController.openFile',
+        error,
+      );
       const errorMessage = l10n.t('Unable to open file: {0}', String(error));
       window.showErrorMessage(errorMessage);
     }

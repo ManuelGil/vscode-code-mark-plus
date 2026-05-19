@@ -3,8 +3,9 @@
  * Extracted from Notes module to ensure separation of concerns.
  */
 import { l10n, window } from 'vscode';
+
 import { openDocument } from '../helpers';
-import { TodoService } from '../services/todo.service';
+import { TodoService } from '../services';
 
 /**
  * The TodoController class.
@@ -15,7 +16,9 @@ import { TodoService } from '../services/todo.service';
  * @public
  */
 export class TodoController {
-  constructor(private readonly todoService: TodoService) {}
+  constructor(private readonly todoService: TodoService) {
+    // constructor left intentionally minimal
+  }
 
   /**
    * The appendToTodoFile command handler.
@@ -75,7 +78,7 @@ export class TodoController {
         window.showErrorMessage(l10n.t('Failed to add note to workspace TODO'));
       }
     } catch (error) {
-      console.error('Error appending to todo file:', error);
+      console.error('[CodeMark+] Runtime failure in appendToTodoFile', error);
       window.showErrorMessage(
         l10n.t('An error occurred while updating the todo file'),
       );
@@ -106,7 +109,7 @@ export class TodoController {
 
       await openDocument(todoFilePath);
     } catch (error) {
-      console.error('Error opening todo file:', error);
+      console.error('[CodeMark+] Runtime failure in openTodoFile', error);
       window.showErrorMessage(
         l10n.t('An error occurred while opening the todo file'),
       );

@@ -70,5 +70,6 @@
 	"codeMarkPlus.tags.tagPriorities.color.description": "Optional color for this tag (hex like #RRGGBB or rgba()).",
 	"codeMarkPlus.tags.tagPriorities.icon.description": "Optional Codicon name (e.g., $(tag)) or emoji to display for this tag.",
 	"codeMarkPlus.appendToTodoFile.title": "Add note to workspace TODO",
+	"codeMarkPlus.openAddress.title": "Open address / Go to location",
 	"codeMarkPlus.openTodoFile.title": "Open workspace TODO"
 }

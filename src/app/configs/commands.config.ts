@@ -2,6 +2,7 @@ export enum CommandIds {
   ChangeWorkspace = 'changeWorkspace',
   RefreshTagBrowserList = 'tagBrowserView.refreshList',
   OpenTagBrowserFile = 'tagBrowserView.openFile',
+  OpenAddress = 'openAddress',
   InsertComment = 'insertComment',
   ReplaceAnnotationTagInSelection = 'replaceAnnotationTagInSelection',
   ReplaceAnnotationTagInFile = 'replaceAnnotationTagInFile',

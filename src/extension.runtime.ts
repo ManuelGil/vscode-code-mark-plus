@@ -5,6 +5,7 @@ import {
   ExtensionContext,
   env,
   l10n,
+  languages,
   MessageItem,
   ProviderResult,
   TreeDataProvider,
@@ -28,39 +29,210 @@ import {
   ViewIds,
 } from './app/configs';
 import {
+  AddressNavigationController,
   CommentController,
   HighlightController,
   TagBrowserController,
   TodoController,
 } from './app/controllers';
-import { debounce, showNoWorkspaceFolderError } from './app/helpers';
+import {
+  AddressDiscoveryWorkflow,
+  debounce,
+  showNoWorkspaceFolderError,
+} from './app/helpers';
 import { NodeModel } from './app/models';
-import { TagBrowserProvider } from './app/providers';
+import { AddressLinkProvider, TagBrowserProvider } from './app/providers';
 import { CommentService, TagIndexService, TodoService } from './app/services';
 
+/**
+ * Main extension runtime orchestration layer.
+ *
+ * RESPONSIBILITIES:
+ * - Workspace initialization
+ * - Runtime composition
+ * - Capability registration
+ * - Extension lifecycle coordination
+ * - VSCode integration wiring
+ *
+ * DOES NOT:
+ * - Implement domain logic
+ * - Parse operational references
+ * - Navigate files directly
+ * - Resolve contextual addresses
+ * - Execute editor workflows
+ *
+ * Domain behavior belongs to:
+ * - controllers
+ * - services
+ * - providers
+ * - helpers
+ *
+ * The runtime intentionally remains:
+ * - lightweight
+ * - deterministic
+ * - orchestration-oriented
+ * - lifecycle-coherent
+ *
+ * @export
+ * @class ExtensionRuntime
+ */
 export class ExtensionRuntime {
   /**
-   * Avoids repeated disabled-state notifications across command invocations.
+   * Prevents repeated disabled-state notifications.
+   *
+   * @private
+   * @type {boolean}
+   * @memberof ExtensionRuntime
    */
   private hasDisabledWarningBeenShown = false;
 
   /**
-   * Current workspace-scoped extension configuration.
+   * Workspace-scoped extension configuration.
+   *
+   * @private
+   * @type {ExtensionConfig}
+   * @memberof ExtensionRuntime
    */
   private config!: ExtensionConfig;
 
-  private commentService: CommentService | undefined;
-  private commentController: CommentController | undefined;
-  private todoService: TodoService | undefined;
-  private todoController: TodoController | undefined;
-  private tagBrowserController: TagBrowserController | undefined;
-  private tagBrowserProvider: TagBrowserProvider | undefined;
-  private tagIndexService: TagIndexService | undefined;
-  private highlightController: HighlightController | undefined;
+  // --------------------------------------------------------------------------
+  // Services
+  // --------------------------------------------------------------------------
+
+  /**
+   * Comment domain service.
+   *
+   * @private
+   * @type {CommentService}
+   * @memberof ExtensionRuntime
+   */
+  private commentService!: CommentService;
+
+  /**
+   * Todo domain service.
+   *
+   * @private
+   * @type {TodoService}
+   * @memberof ExtensionRuntime
+   */
+  private todoService!: TodoService;
+
+  /**
+   * Workspace tag indexing service.
+   *
+   * @private
+   * @type {TagIndexService}
+   * @memberof ExtensionRuntime
+   */
+  private tagIndexService!: TagIndexService;
+
+  // --------------------------------------------------------------------------
+  // Controllers
+  // --------------------------------------------------------------------------
+
+  /**
+   * Comment operational controller.
+   *
+   * @private
+   * @type {CommentController}
+   * @memberof ExtensionRuntime
+   */
+  private commentController!: CommentController;
+
+  /**
+   * Todo operational controller.
+   *
+   * @private
+   * @type {TodoController}
+   * @memberof ExtensionRuntime
+   */
+  private todoController!: TodoController;
+
+  /**
+   * Workspace tag browser controller.
+   *
+   * @private
+   * @type {TagBrowserController}
+   * @memberof ExtensionRuntime
+   */
+  private tagBrowserController!: TagBrowserController;
+
+  /**
+   * Lightweight operational address navigation controller.
+   *
+   * @private
+   * @type {AddressNavigationController}
+   * @memberof ExtensionRuntime
+   */
+  private addressNavigationController!: AddressNavigationController;
+
+  /**
+   * Lightweight operational address discovery workflow.
+   *
+   * @private
+   * @type {AddressDiscoveryWorkflow}
+   * @memberof ExtensionRuntime
+   */
+  private addressDiscoveryWorkflow!: AddressDiscoveryWorkflow;
+
+  /**
+   * Active editor highlighting controller.
+   *
+   * @private
+   * @type {HighlightController}
+   * @memberof ExtensionRuntime
+   */
+  private highlightController!: HighlightController;
+
+  // --------------------------------------------------------------------------
+  // Providers
+  // --------------------------------------------------------------------------
+
+  /**
+   * Workspace tag browser provider.
+   *
+   * @private
+   * @type {TagBrowserProvider}
+   * @memberof ExtensionRuntime
+   */
+  private tagBrowserProvider!: TagBrowserProvider;
+
+  /**
+   * Active highlight-related listeners.
+   *
+   * @private
+   * @type {Disposable[]}
+   * @memberof ExtensionRuntime
+   */
   private highlightListeners: Disposable[] = [];
 
-  constructor(public readonly context: ExtensionContext) {}
+  /**
+   * Creates a new ExtensionRuntime instance.
+   *
+   * @constructor
+   * @param {ExtensionContext} context - VSCode extension context
+   */
+  constructor(readonly context: ExtensionContext) {}
 
+  // --------------------------------------------------------------------------
+  // Initialization
+  // --------------------------------------------------------------------------
+
+  /**
+   * Initializes workspace-scoped runtime state.
+   *
+   * RESPONSIBILITIES:
+   * - Workspace selection
+   * - Configuration initialization
+   * - Runtime readiness validation
+   * - Version checks bootstrap
+   *
+   * @async
+   * @function initialize
+   * @memberof ExtensionRuntime
+   *
+   * @returns {Promise<boolean>}
+   */
   async initialize(): Promise<boolean> {
     const workspaceFolder = await this.selectWorkspaceFolder();
 
@@ -79,94 +251,161 @@ export class ExtensionRuntime {
     return true;
   }
 
+  /**
+   * Starts runtime capabilities.
+   *
+   * Runtime startup intentionally follows:
+   *
+   * 1. Runtime composition
+   * 2. Capability registration
+   * 3. Reactive synchronization
+   *
+   * @async
+   * @function start
+   * @memberof ExtensionRuntime
+   *
+   * @returns {Promise<void>}
+   */
   async start(): Promise<void> {
+    this.initializeRuntime();
+
     this.registerWorkspaceCommands();
     this.registerCommentCommands();
     this.registerTagBrowserCommands();
     this.registerNoteCommands();
+    this.registerAddressNavigation();
+
     this.syncHighlightingState();
   }
 
-  private syncHighlightingState(): void {
-    if (!this.config.enable || !this.config.highlightActive) {
-      this.disableHighlighting();
-      return;
-    }
+  /**
+   * Initializes runtime services,
+   * controllers, and providers.
+   *
+   * This phase establishes deterministic
+   * runtime composition before capability
+   * registration occurs.
+   *
+   * @private
+   * @function initializeRuntime
+   * @memberof ExtensionRuntime
+   */
+  private initializeRuntime(): void {
+    // Ensure services are initialized before controllers (controllers depend on services)
+    this.initializeServices();
 
-    if (!this.highlightController) {
-      this.highlightController = new HighlightController(this.config);
-    }
+    this.initializeControllers();
 
-    if (this.highlightListeners.length === 0) {
-      const updateHighlighting = () => {
-        const editor = window.activeTextEditor;
-
-        if (
-          !editor ||
-          !this.isExtensionEnabled() ||
-          !this.config.highlightActive
-        ) {
-          return;
-        }
-
-        this.highlightController?.updateHighlighting(editor);
-      };
-
-      const debouncedUpdate = debounce(updateHighlighting, 200);
-
-      this.highlightListeners.push(
-        window.onDidChangeActiveTextEditor(updateHighlighting),
-        workspace.onDidChangeTextDocument((event) => {
-          if (
-            window.activeTextEditor &&
-            event.document === window.activeTextEditor.document
-          ) {
-            debouncedUpdate();
-          }
-        }),
-      );
-
-      this.context.subscriptions.push(...this.highlightListeners);
-    }
-
-    const activeEditor = window.activeTextEditor;
-    if (activeEditor) {
-      this.highlightController.updateHighlighting(activeEditor);
-    }
-  }
-
-  private disableHighlighting(): void {
-    if (this.highlightListeners.length > 0) {
-      for (const listener of this.highlightListeners) {
-        listener.dispose();
-      }
-      this.highlightListeners = [];
-    }
-
-    if (this.highlightController && window.activeTextEditor) {
-      this.highlightController.clearHighlighting(window.activeTextEditor);
-    }
-
-    this.highlightController = undefined;
+    this.initializeProviders();
   }
 
   /**
-   * Runs non-blocking version checks after startup.
+   * Initializes runtime services.
+   *
+   * Services contain domain-oriented
+   * operational primitives.
+   *
+   * @private
+   * @function initializeServices
+   * @memberof ExtensionRuntime
+   */
+  private initializeServices(): void {
+    this.commentService = new CommentService(this.config);
+
+    this.todoService = new TodoService(this.config);
+
+    // NOTE: TagIndexService depends on TagBrowserController which is created
+    // during controller initialization. It will be instantiated after controllers
+    // are initialized to avoid undefined dependencies.
+  }
+
+  /**
+   * Initializes runtime controllers.
+   *
+   * Controllers orchestrate operational
+   * editor workflows and user interactions.
+   *
+   * @private
+   * @function initializeControllers
+   * @memberof ExtensionRuntime
+   */
+  private initializeControllers(): void {
+    this.tagBrowserController = new TagBrowserController(this.config);
+
+    // Instantiate TagIndexService now that tagBrowserController exists
+    this.tagIndexService = new TagIndexService(this.tagBrowserController);
+
+    this.commentController = new CommentController(this.commentService);
+
+    this.todoController = new TodoController(this.todoService);
+
+    // Initialize lightweight discovery workflow
+    this.addressDiscoveryWorkflow = new AddressDiscoveryWorkflow(
+      this.commentService,
+    );
+
+    this.addressNavigationController = new AddressNavigationController(
+      this.config,
+      this.tagBrowserController,
+      this.addressDiscoveryWorkflow,
+    );
+  }
+
+  /**
+   * Initializes runtime providers.
+   *
+   * Providers expose lightweight
+   * editor-native affordances.
+   *
+   * @private
+   * @function initializeProviders
+   * @memberof ExtensionRuntime
+   */
+  private initializeProviders(): void {
+    this.tagBrowserProvider = new TagBrowserProvider(this.tagIndexService);
+  }
+
+  // --------------------------------------------------------------------------
+  // Version checks
+  // --------------------------------------------------------------------------
+
+  /**
+   * Starts non-blocking extension
+   * version checks after runtime startup.
+   *
+   * @private
+   * @function startVersionChecks
+   * @memberof ExtensionRuntime
    */
   private startVersionChecks(): void {
     void this.handleLocalVersionNotifications();
+
     void this.checkMarketplaceVersion();
   }
 
   /**
-   * Returns the extension version declared in package metadata.
+   * Returns the current extension version.
+   *
+   * @private
+   * @function getCurrentVersion
+   * @memberof ExtensionRuntime
+   *
+   * @returns {string}
    */
   private getCurrentVersion(): string {
     return this.context.extension.packageJSON?.version ?? '0.0.0';
   }
 
   /**
-   * Handles first-run and local update notifications.
+   * Handles first-run and local
+   * update notifications.
+   *
+   * @async
+   * @function handleLocalVersionNotifications
+   * @private
+   * @memberof ExtensionRuntime
+   *
+   * @returns {Promise<void>}
    */
   private async handleLocalVersionNotifications(): Promise<void> {
     const previousVersion = this.context.globalState.get<string>(
@@ -193,25 +432,27 @@ export class ExtensionRuntime {
     }
 
     if (previousVersion !== currentVersion) {
-      const actionReleaseNotes: MessageItem = {
+      const releaseNotesAction: MessageItem = {
         title: l10n.t('Release Notes'),
       };
-      const actionDismiss: MessageItem = { title: l10n.t('Dismiss') };
-      const availableActions = [actionReleaseNotes, actionDismiss];
 
-      const updateMessage = l10n.t(
-        "The {0} extension has been updated. Check out what's new in version {1}",
-        EXTENSION_DISPLAY_NAME,
-        currentVersion,
+      const dismissAction: MessageItem = {
+        title: l10n.t('Dismiss'),
+      };
+
+      const selectedAction = await window.showInformationMessage(
+        l10n.t(
+          "The {0} extension has been updated. Check out what's new in version {1}",
+          EXTENSION_DISPLAY_NAME,
+          currentVersion,
+        ),
+        releaseNotesAction,
+        dismissAction,
       );
 
-      const userSelection = await window.showInformationMessage(
-        updateMessage,
-        ...availableActions,
-      );
-
-      if (userSelection?.title === actionReleaseNotes.title) {
+      if (selectedAction?.title === releaseNotesAction.title) {
         const changelogUrl = `${REPOSITORY_URL}/blob/main/CHANGELOG.md`;
+
         env.openExternal(Uri.parse(changelogUrl));
       }
 
@@ -223,7 +464,15 @@ export class ExtensionRuntime {
   }
 
   /**
-   * Checks Marketplace for a newer published extension version.
+   * Checks VSCode Marketplace for
+   * newer extension versions.
+   *
+   * @async
+   * @function checkMarketplaceVersion
+   * @private
+   * @memberof ExtensionRuntime
+   *
+   * @returns {Promise<void>}
    */
   private async checkMarketplaceVersion(): Promise<void> {
     const currentVersion = this.getCurrentVersion();
@@ -238,22 +487,25 @@ export class ExtensionRuntime {
         return;
       }
 
-      const actionUpdateNow: MessageItem = { title: l10n.t('Update Now') };
-      const actionDismiss: MessageItem = { title: l10n.t('Dismiss') };
-      const availableActions = [actionUpdateNow, actionDismiss];
+      const updateAction: MessageItem = {
+        title: l10n.t('Update Now'),
+      };
 
-      const updateMessage = l10n.t(
-        'A new version of {0} is available. Update to version {1} now',
-        EXTENSION_DISPLAY_NAME,
-        latestVersion,
+      const dismissAction: MessageItem = {
+        title: l10n.t('Dismiss'),
+      };
+
+      const selectedAction = await window.showInformationMessage(
+        l10n.t(
+          'A new version of {0} is available. Update to version {1} now',
+          EXTENSION_DISPLAY_NAME,
+          latestVersion,
+        ),
+        updateAction,
+        dismissAction,
       );
 
-      const userSelection = await window.showInformationMessage(
-        updateMessage,
-        ...availableActions,
-      );
-
-      if (userSelection?.title === actionUpdateNow.title) {
+      if (selectedAction?.title === updateAction.title) {
         await commands.executeCommand(
           'workbench.extensions.action.install.anotherVersion',
           `${USER_PUBLISHER}.${EXTENSION_NAME}`,
@@ -264,8 +516,23 @@ export class ExtensionRuntime {
     }
   }
 
+  // --------------------------------------------------------------------------
+  // Workspace selection
+  // --------------------------------------------------------------------------
+
   /**
-   * Selects the workspace folder that scopes configuration and generation.
+   * Selects the workspace folder used
+   * to scope extension configuration.
+   *
+   * Multi-root workspaces preserve
+   * the previously selected folder.
+   *
+   * @async
+   * @function selectWorkspaceFolder
+   * @private
+   * @memberof ExtensionRuntime
+   *
+   * @returns {Promise<WorkspaceFolder | undefined>}
    */
   private async selectWorkspaceFolder(): Promise<WorkspaceFolder | undefined> {
     const availableWorkspaceFolders = workspace.workspaceFolders;
@@ -276,16 +543,13 @@ export class ExtensionRuntime {
       return undefined;
     }
 
-    const previousFolderUriString = this.context.globalState.get<string>(
+    const previousFolderUri = this.context.globalState.get<string>(
       ContextKeys.SelectedWorkspaceFolder,
     );
-    let previousFolder: WorkspaceFolder | undefined;
 
-    if (previousFolderUriString) {
-      previousFolder = availableWorkspaceFolders.find(
-        (folder) => folder.uri.toString() === previousFolderUriString,
-      );
-    }
+    const previousFolder = availableWorkspaceFolders.find(
+      (folder) => folder.uri.toString() === previousFolderUri,
+    );
 
     if (availableWorkspaceFolders.length === 1) {
       return availableWorkspaceFolders[0];
@@ -299,16 +563,15 @@ export class ExtensionRuntime {
       return previousFolder;
     }
 
-    const pickerPlaceholder = l10n.t(
-      '{0}: Select a workspace folder to use. This folder will be used to load workspace-specific configuration for the extension',
-      EXTENSION_DISPLAY_NAME,
-    );
     const selectedFolder = await window.showWorkspaceFolderPick({
-      placeHolder: pickerPlaceholder,
+      placeHolder: l10n.t(
+        '{0}: Select a workspace folder to use. This folder will be used to load workspace-specific configuration for the extension',
+        EXTENSION_DISPLAY_NAME,
+      ),
     });
 
     if (selectedFolder) {
-      this.context.globalState.update(
+      await this.context.globalState.update(
         ContextKeys.SelectedWorkspaceFolder,
         selectedFolder.uri.toString(),
       );
@@ -317,75 +580,84 @@ export class ExtensionRuntime {
     return selectedFolder;
   }
 
+  // --------------------------------------------------------------------------
+  // Configuration
+  // --------------------------------------------------------------------------
+
   /**
-   * Initializes workspace configuration and registers configuration listeners.
+   * Initializes workspace-scoped
+   * extension configuration.
    *
-   * @param selectedWorkspaceFolder - The workspace folder used to load the configuration.
+   * Also registers configuration
+   * synchronization listeners.
+   *
+   * @private
+   * @function initializeConfiguration
+   * @memberof ExtensionRuntime
+   *
+   * @param {WorkspaceFolder} workspaceFolder
    */
-  private initializeConfiguration(
-    selectedWorkspaceFolder: WorkspaceFolder,
-  ): void {
+  private initializeConfiguration(workspaceFolder: WorkspaceFolder): void {
     this.config = new ExtensionConfig(
-      workspace.getConfiguration(EXTENSION_ID, selectedWorkspaceFolder.uri),
+      workspace.getConfiguration(EXTENSION_ID, workspaceFolder.uri),
     );
 
-    this.config.workspaceSelection = selectedWorkspaceFolder.uri.fsPath;
+    this.config.workspaceSelection = workspaceFolder.uri.fsPath;
 
-    workspace.onDidChangeConfiguration((configurationChangeEvent) => {
-      const updatedWorkspaceConfig = workspace.getConfiguration(
+    workspace.onDidChangeConfiguration((event) => {
+      const updatedConfiguration = workspace.getConfiguration(
         EXTENSION_ID,
-        selectedWorkspaceFolder.uri,
+        workspaceFolder.uri,
       );
 
       if (
-        configurationChangeEvent.affectsConfiguration(
+        event.affectsConfiguration(
           `${EXTENSION_ID}.enable`,
-          selectedWorkspaceFolder.uri,
+          workspaceFolder.uri,
         )
       ) {
-        const isExtensionEnabled =
-          updatedWorkspaceConfig.get<boolean>('enable');
+        const isEnabled = updatedConfiguration.get<boolean>('enable');
 
-        this.config.update(updatedWorkspaceConfig);
+        this.config.update(updatedConfiguration);
 
-        if (isExtensionEnabled) {
-          const enabledMessage = l10n.t(
-            'The {0} extension is now enabled and ready to use',
-            EXTENSION_DISPLAY_NAME,
-          );
-          window.showInformationMessage(enabledMessage);
-        } else {
-          const disabledMessage = l10n.t(
-            'The {0} extension is now disabled',
-            EXTENSION_DISPLAY_NAME,
-          );
-          window.showInformationMessage(disabledMessage);
-        }
+        const message = isEnabled
+          ? l10n.t(
+              'The {0} extension is now enabled and ready to use',
+              EXTENSION_DISPLAY_NAME,
+            )
+          : l10n.t('The {0} extension is now disabled', EXTENSION_DISPLAY_NAME);
+
+        window.showInformationMessage(message);
       }
 
-      if (
-        configurationChangeEvent.affectsConfiguration(
-          EXTENSION_ID,
-          selectedWorkspaceFolder.uri,
-        )
-      ) {
-        this.config.update(updatedWorkspaceConfig);
+      if (event.affectsConfiguration(EXTENSION_ID, workspaceFolder.uri)) {
+        this.config.update(updatedConfiguration);
+
         this.syncHighlightingState();
       }
     });
   }
 
   /**
-   * Returns whether commands should execute under current configuration.
+   * Returns whether extension
+   * capabilities should execute.
    *
-   * @remarks
-   * Shows a disabled warning once until the extension is re-enabled.
+   * Disabled-state notifications are
+   * intentionally shown once until
+   * the extension is re-enabled.
+   *
+   * @private
+   * @function isExtensionEnabled
+   * @memberof ExtensionRuntime
+   *
+   * @returns {boolean}
    */
   private isExtensionEnabled(): boolean {
     const isEnabled = this.config.enable;
 
     if (isEnabled) {
       this.hasDisabledWarningBeenShown = false;
+
       return true;
     }
 
@@ -396,53 +668,85 @@ export class ExtensionRuntime {
           EXTENSION_DISPLAY_NAME,
         ),
       );
+
       this.hasDisabledWarningBeenShown = true;
     }
 
     return false;
   }
 
+  // --------------------------------------------------------------------------
+  // Workspace commands
+  // --------------------------------------------------------------------------
+
   /**
-   * Registers workspace selection command for multi-root workspaces.
+   * Registers workspace-scoped commands.
+   *
+   * RESPONSIBILITIES:
+   * - Workspace switching
+   * - Workspace persistence
+   * - Workspace configuration synchronization
+   *
+   * @private
+   * @function registerWorkspaceCommands
+   * @memberof ExtensionRuntime
    */
   private registerWorkspaceCommands(): void {
-    const disposableChangeWorkspace = commands.registerCommand(
+    const disposable = commands.registerCommand(
       `${EXTENSION_ID}.${CommandIds.ChangeWorkspace}`,
       async () => {
-        const pickerPlaceholder = l10n.t('Select a workspace folder to use');
         const selectedFolder = await window.showWorkspaceFolderPick({
-          placeHolder: pickerPlaceholder,
+          placeHolder: l10n.t('Select a workspace folder to use'),
         });
 
-        if (selectedFolder) {
-          this.context.globalState.update(
-            ContextKeys.SelectedWorkspaceFolder,
-            selectedFolder.uri.toString(),
-          );
-
-          const updatedWorkspaceConfig = workspace.getConfiguration(
-            EXTENSION_ID,
-            selectedFolder.uri,
-          );
-          this.config.update(updatedWorkspaceConfig);
-
-          this.config.workspaceSelection = selectedFolder.uri.fsPath;
-
-          window.showInformationMessage(
-            l10n.t('Switched to workspace folder: {0}', selectedFolder.name),
-          );
+        if (!selectedFolder) {
+          return;
         }
+
+        await this.context.globalState.update(
+          ContextKeys.SelectedWorkspaceFolder,
+          selectedFolder.uri.toString(),
+        );
+
+        const updatedConfiguration = workspace.getConfiguration(
+          EXTENSION_ID,
+          selectedFolder.uri,
+        );
+
+        this.config.update(updatedConfiguration);
+
+        this.config.workspaceSelection = selectedFolder.uri.fsPath;
+
+        window.showInformationMessage(
+          l10n.t('Switched to workspace folder: {0}', selectedFolder.name),
+        );
       },
     );
 
-    this.context.subscriptions.push(disposableChangeWorkspace);
+    this.context.subscriptions.push(disposable);
   }
 
-  private registerCommentCommands(): void {
-    this.commentService = new CommentService(this.config);
-    this.commentController = new CommentController(this.commentService);
+  // --------------------------------------------------------------------------
+  // Comment commands
+  // --------------------------------------------------------------------------
 
-    const extensionCommands = [
+  /**
+   * Registers comment-related commands.
+   *
+   * RESPONSIBILITIES:
+   * - Annotation insertion
+   * - Annotation replacement
+   * - Annotation cleanup
+   *
+   * Operational behavior belongs to:
+   * - CommentController
+   *
+   * @private
+   * @function registerCommentCommands
+   * @memberof ExtensionRuntime
+   */
+  private registerCommentCommands(): void {
+    const commandsToRegister = [
       {
         id: CommandIds.InsertComment,
         handler: () => {
@@ -450,9 +754,10 @@ export class ExtensionRuntime {
             return;
           }
 
-          this.commentController?.insertTextInActiveEditor();
+          this.commentController.insertTextInActiveEditor();
         },
       },
+
       {
         id: CommandIds.ReplaceAnnotationTagInSelection,
         handler: () => {
@@ -460,9 +765,10 @@ export class ExtensionRuntime {
             return;
           }
 
-          this.commentController?.replaceAnnotationTagInSelection();
+          this.commentController.replaceAnnotationTagInSelection();
         },
       },
+
       {
         id: CommandIds.ReplaceAnnotationTagInFile,
         handler: () => {
@@ -470,9 +776,10 @@ export class ExtensionRuntime {
             return;
           }
 
-          this.commentController?.replaceAnnotationTagInActiveFile();
+          this.commentController.replaceAnnotationTagInActiveFile();
         },
       },
+
       {
         id: CommandIds.RemoveSingleLineComments,
         handler: () => {
@@ -480,9 +787,10 @@ export class ExtensionRuntime {
             return;
           }
 
-          this.commentController?.removeSingleLineComments();
+          this.commentController.removeSingleLineComments();
         },
       },
+
       {
         id: CommandIds.RemoveAllSingleLineComments,
         handler: () => {
@@ -490,63 +798,103 @@ export class ExtensionRuntime {
             return;
           }
 
-          this.commentController?.removeAllSingleLineComments();
+          this.commentController.removeAllSingleLineComments();
         },
       },
     ];
 
-    extensionCommands.forEach(({ id, handler }) => {
+    for (const commandDefinition of commandsToRegister) {
       const disposable = commands.registerCommand(
-        `${EXTENSION_ID}.${id}`,
-        handler,
+        `${EXTENSION_ID}.${commandDefinition.id}`,
+        () => {
+          return commandDefinition.handler();
+        },
       );
 
       this.context.subscriptions.push(disposable);
-    });
+    }
   }
 
+  // --------------------------------------------------------------------------
+  // Tag browser commands
+  // --------------------------------------------------------------------------
+
+  /**
+   * Registers tag browser capabilities.
+   *
+   * RESPONSIBILITIES:
+   * - Tree view registration
+   * - Refresh orchestration
+   * - File opening delegation
+   *
+   * Operational behavior belongs to:
+   * - TagBrowserController
+   * - TagBrowserProvider
+   * - TagIndexService
+   *
+   * @private
+   * @function registerTagBrowserCommands
+   * @memberof ExtensionRuntime
+   */
   private registerTagBrowserCommands(): void {
-    const lazyTagBrowserProvider = this.createLazyTagBrowserProvider();
-    this.context.subscriptions.push(lazyTagBrowserProvider);
+    const lazyProvider = this.createLazyTagBrowserProvider();
 
-    this.context.subscriptions.push(
-      window.createTreeView(ViewIds.TagBrowserView, {
-        treeDataProvider: lazyTagBrowserProvider,
-        showCollapseAll: true,
-      }),
-    );
+    this.context.subscriptions.push(lazyProvider);
 
-    const disposableRefreshList = commands.registerCommand(
+    const treeView = window.createTreeView(ViewIds.TagBrowserView, {
+      treeDataProvider: lazyProvider,
+      showCollapseAll: true,
+    });
+
+    this.context.subscriptions.push(treeView);
+
+    const refreshDisposable = commands.registerCommand(
       `${EXTENSION_ID}.${CommandIds.RefreshTagBrowserList}`,
       async () => {
         if (!this.isExtensionEnabled()) {
           return;
         }
 
-        this.getTagBrowserProvider().refresh();
-        await this.getTagIndexService().refreshWorkspace();
+        this.tagBrowserProvider.refresh();
+
+        await this.tagIndexService.refreshWorkspace();
       },
     );
 
-    const disposableOpenTagBrowserFile = commands.registerCommand(
+    const openFileDisposable = commands.registerCommand(
       `${EXTENSION_ID}.${CommandIds.OpenTagBrowserFile}`,
-      async (fileUri, lineNumber?: number) => {
+      async (fileUri: Uri, lineNumber?: number) => {
         if (!this.isExtensionEnabled()) {
           return;
         }
 
-        await this.getTagBrowserController().openFile(fileUri, lineNumber);
+        await this.tagBrowserController.openFile(fileUri, lineNumber);
       },
     );
 
-    this.context.subscriptions.push(
-      disposableRefreshList,
-      disposableOpenTagBrowserFile,
-    );
+    this.context.subscriptions.push(refreshDisposable, openFileDisposable);
   }
 
+  // --------------------------------------------------------------------------
+  // Todo commands
+  // --------------------------------------------------------------------------
+
+  /**
+   * Registers todo-related commands.
+   *
+   * RESPONSIBILITIES:
+   * - Todo file append
+   * - Todo file opening
+   *
+   * Operational behavior belongs to:
+   * - TodoController
+   *
+   * @private
+   * @function registerNoteCommands
+   * @memberof ExtensionRuntime
+   */
   private registerNoteCommands(): void {
-    const noteCommands = [
+    const commandsToRegister = [
       {
         id: CommandIds.AppendToTodoFile,
         handler: () => {
@@ -554,9 +902,10 @@ export class ExtensionRuntime {
             return;
           }
 
-          return this.getTodoController().appendToTodoFile();
+          return this.todoController.appendToTodoFile();
         },
       },
+
       {
         id: CommandIds.OpenTodoFile,
         handler: () => {
@@ -564,100 +913,227 @@ export class ExtensionRuntime {
             return;
           }
 
-          return this.getTodoController().openTodoFile();
+          return this.todoController.openTodoFile();
         },
       },
     ];
 
-    noteCommands.forEach(({ id, handler }) => {
+    for (const commandDefinition of commandsToRegister) {
       const disposable = commands.registerCommand(
-        `${EXTENSION_ID}.${id}`,
-        handler,
+        `${EXTENSION_ID}.${commandDefinition.id}`,
+        commandDefinition.handler,
       );
 
       this.context.subscriptions.push(disposable);
-    });
-  }
-
-  private getTagBrowserController(): TagBrowserController {
-    if (!this.tagBrowserController) {
-      this.tagBrowserController = new TagBrowserController(this.config);
     }
-
-    return this.tagBrowserController;
   }
 
-  private getTagIndexService(): TagIndexService {
-    if (!this.tagIndexService) {
-      this.tagIndexService = new TagIndexService(
-        this.getTagBrowserController(),
-      );
-    }
+  // --------------------------------------------------------------------------
+  // Address navigation
+  // --------------------------------------------------------------------------
 
-    return this.tagIndexService;
+  /**
+   * Registers lightweight operational
+   * address navigation capabilities.
+   *
+   * RESPONSIBILITIES:
+   * - Open address command registration
+   * - Document link provider registration
+   * - Editor-native navigation affordances
+   *
+   * DOES NOT:
+   * - Resolve addresses
+   * - Parse references
+   * - Navigate files directly
+   *
+   * Operational behavior belongs to:
+   * - AddressNavigationController
+   *
+   * @private
+   * @function registerAddressNavigation
+   * @memberof ExtensionRuntime
+   */
+  private registerAddressNavigation(): void {
+    const openAddressDisposable = commands.registerCommand(
+      `${EXTENSION_ID}.${CommandIds.OpenAddress}`,
+      async (address?: string) => {
+        if (!this.isExtensionEnabled()) {
+          return;
+        }
+
+        await this.addressNavigationController.openAddress(address);
+      },
+    );
+
+    const provider = new AddressLinkProvider();
+
+    const providerDisposable = languages.registerDocumentLinkProvider(
+      ['markdown', 'plaintext'],
+      provider,
+    );
+
+    this.context.subscriptions.push(openAddressDisposable, providerDisposable);
   }
 
-  private getTagBrowserProvider(): TagBrowserProvider {
-    if (!this.tagBrowserProvider) {
-      this.tagBrowserProvider = new TagBrowserProvider(
-        this.getTagIndexService(),
-      );
-    }
+  // --------------------------------------------------------------------------
+  // Tag browser provider
+  // --------------------------------------------------------------------------
 
-    return this.tagBrowserProvider;
-  }
-
-  private getTodoService(): TodoService {
-    if (!this.todoService) {
-      this.todoService = new TodoService(this.config);
-    }
-
-    return this.todoService;
-  }
-
-  private getTodoController(): TodoController {
-    if (!this.todoController) {
-      this.todoController = new TodoController(this.getTodoService());
-    }
-
-    return this.todoController;
-  }
-
+  /**
+   * Creates a lightweight lazy tree provider wrapper.
+   *
+   * RESPONSIBILITIES:
+   * - Tree view delegation
+   * - Event forwarding
+   * - Provider lifecycle containment
+   *
+   * DOES NOT:
+   * - Implement domain logic
+   * - Resolve annotations
+   * - Index workspace state
+   *
+   * Domain behavior belongs to:
+   * - TagBrowserProvider
+   *
+   * @private
+   * @function createLazyTagBrowserProvider
+   * @memberof ExtensionRuntime
+   *
+   * @returns {TreeDataProvider<NodeModel> &
+   *   Disposable & { refresh(): void }}
+   */
   private createLazyTagBrowserProvider(): TreeDataProvider<NodeModel> &
     Disposable & { refresh(): void } {
     const onDidChangeTreeDataEmitter = new EventEmitter<
       NodeModel | undefined | null | void
     >();
-    let innerProvider: TagBrowserProvider | undefined;
-    let providerListener: Disposable | undefined;
 
-    const ensureProvider = (): TagBrowserProvider => {
-      if (!innerProvider) {
-        innerProvider = this.getTagBrowserProvider();
-        providerListener = innerProvider.onDidChangeTreeData((event) => {
-          onDidChangeTreeDataEmitter.fire(event);
-        });
-        this.context.subscriptions.push(providerListener);
-        this.context.subscriptions.push(innerProvider);
-      }
+    const provider = this.tagBrowserProvider;
 
-      return innerProvider;
-    };
+    const providerListener = provider.onDidChangeTreeData((event) => {
+      onDidChangeTreeDataEmitter.fire(event);
+    });
+
+    this.context.subscriptions.push(providerListener);
 
     return {
       onDidChangeTreeData: onDidChangeTreeDataEmitter.event,
+
       getTreeItem: (element: NodeModel): TreeItem | Thenable<TreeItem> =>
-        ensureProvider().getTreeItem(element),
+        provider.getTreeItem(element),
+
       getChildren: (element?: NodeModel): ProviderResult<NodeModel[]> =>
-        ensureProvider().getChildren(element),
-      refresh: (): void => {
-        ensureProvider().refresh();
+        provider.getChildren(element),
+
+      refresh(): void {
+        provider.refresh();
       },
-      dispose: (): void => {
-        providerListener?.dispose();
-        innerProvider?.dispose();
+
+      dispose(): void {
+        providerListener.dispose();
+
         onDidChangeTreeDataEmitter.dispose();
       },
     };
+  }
+
+  // --------------------------------------------------------------------------
+  // Highlight synchronization
+  // --------------------------------------------------------------------------
+
+  /**
+   * Synchronizes active editor highlighting state.
+   *
+   * RESPONSIBILITIES:
+   * - Highlight lifecycle orchestration
+   * - Reactive editor synchronization
+   * - Highlight listener management
+   *
+   * Highlighting remains:
+   * - editor-native
+   * - lightweight
+   * - reactive
+   * - non-invasive
+   *
+   * @private
+   * @function syncHighlightingState
+   * @memberof ExtensionRuntime
+   */
+  private syncHighlightingState(): void {
+    if (!this.config.enable || !this.config.highlightActive) {
+      this.disableHighlighting();
+
+      return;
+    }
+
+    if (!this.highlightController) {
+      this.highlightController = new HighlightController(this.config);
+    }
+
+    if (this.highlightListeners.length === 0) {
+      const updateHighlighting = (): void => {
+        const activeEditor = window.activeTextEditor;
+
+        if (
+          !activeEditor ||
+          !this.isExtensionEnabled() ||
+          !this.config.highlightActive
+        ) {
+          return;
+        }
+
+        this.highlightController.updateHighlighting(activeEditor);
+      };
+
+      const debouncedUpdate = debounce(updateHighlighting, 200);
+
+      this.highlightListeners.push(
+        window.onDidChangeActiveTextEditor(updateHighlighting),
+
+        workspace.onDidChangeTextDocument((event) => {
+          const activeEditor = window.activeTextEditor;
+
+          if (activeEditor && event.document === activeEditor.document) {
+            debouncedUpdate();
+          }
+        }),
+      );
+
+      this.context.subscriptions.push(...this.highlightListeners);
+    }
+
+    const activeEditor = window.activeTextEditor;
+
+    if (activeEditor) {
+      this.highlightController.updateHighlighting(activeEditor);
+    }
+  }
+
+  /**
+   * Disables active editor highlighting.
+   *
+   * RESPONSIBILITIES:
+   * - Listener disposal
+   * - Highlight cleanup
+   * - Reactive lifecycle teardown
+   *
+   * @private
+   * @function disableHighlighting
+   * @memberof ExtensionRuntime
+   */
+  private disableHighlighting(): void {
+    if (this.highlightListeners.length > 0) {
+      for (const listener of this.highlightListeners) {
+        listener.dispose();
+      }
+
+      this.highlightListeners = [];
+    }
+
+    if (this.highlightController && window.activeTextEditor) {
+      this.highlightController.clearHighlighting(window.activeTextEditor);
+    }
+
+    this.highlightController = undefined as never;
   }
 }

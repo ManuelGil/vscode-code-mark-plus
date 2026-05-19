@@ -59,12 +59,13 @@ export class CommentController {
    * @public
    * @memberof CommentController
    */
-  constructor(readonly service: CommentService) {}
-
+  constructor(readonly service: CommentService) {
+    console.log('[CodeMark+] CommentController initialized', {
+      hasCommentService: !!service,
+      hasConfig: !!service?.config,
+    });
+  }
   // -----------------------------------------------------------------
-  // Methods
-  // -----------------------------------------------------------------
-
   // Public methods
 
   /**
@@ -138,7 +139,10 @@ export class CommentController {
         editBuilder.insert(insertPosition, docComment);
       });
     } catch (error) {
-      console.error('Error inserting comment:', error);
+      console.error(
+        '[CodeMark+] Runtime failure in insertTextInActiveEditor',
+        error,
+      );
       window.showErrorMessage(
         l10n.t('An unexpected error occurred while inserting the comment'),
       );
@@ -303,7 +307,10 @@ export class CommentController {
           : l10n.t('Selected annotation comments were cleaned'),
       );
     } catch (error) {
-      console.error('Error removing comments:', error);
+      console.error(
+        '[CodeMark+] Runtime failure in removeSingleLineComments',
+        error,
+      );
       window.showErrorMessage(
         l10n.t('An unexpected error occurred while removing comments'),
       );
@@ -332,6 +339,7 @@ export class CommentController {
       }
 
       const documentText = editor.document.getText();
+
       const comments = this.service.findSingleLineComments(
         documentText,
         editor.document.languageId,
@@ -369,7 +377,10 @@ export class CommentController {
 
       window.showInformationMessage(l10n.t('All comments were cleaned'));
     } catch (error) {
-      console.error('Error removing all comments:', error);
+      console.error(
+        '[CodeMark+] Runtime failure in removeAllSingleLineComments',
+        error,
+      );
       window.showErrorMessage(
         l10n.t('An unexpected error occurred while removing all comments'),
       );
@@ -411,7 +422,10 @@ export class CommentController {
         l10n.t('Selected annotation tag was replaced within the selection'),
       );
     } catch (error) {
-      console.error('Error replacing annotation tag:', error);
+      console.error(
+        '[CodeMark+] Runtime failure in replaceAnnotationTagInSelection',
+        error,
+      );
       window.showErrorMessage(
         l10n.t('An unexpected error occurred while replacing annotation tags'),
       );
@@ -458,7 +472,10 @@ export class CommentController {
         l10n.t('Selected annotation tag was replaced in the active file'),
       );
     } catch (error) {
-      console.error('Error replacing annotation tag in active file:', error);
+      console.error(
+        '[CodeMark+] Runtime failure in replaceAnnotationTagInActiveFile',
+        error,
+      );
       window.showErrorMessage(
         l10n.t('An unexpected error occurred while replacing annotation tags'),
       );

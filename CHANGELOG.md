@@ -9,6 +9,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.9.0] - 2026-05-19
+
+### Added
+
+- Add contextual navigation for markdown and plaintext documents
+- Support references such as `path/file.ts`, `path/file.ts#10`, `path/file.ts#10:4`, `path/file.ts#10:20`, `TODO(path/file.ts)`, `TODO(path/file.ts#10)`, and `TODO(path/file.ts#10-20)`
+- Support markdown frontmatter `references:` collections
+- Add editor-native navigation links (`Ctrl+Click`)
+- Add `Open Address` command
+- Add contextual annotation discovery and graceful fallback navigation
+
+### Changed
+
+- Improve workspace-first address resolution
+- Separate anchor navigation from explicit range navigation
+- Preserve tag-scoped references during discovery
+- Improve `DocumentLink` generation and VS Code command URI handling
+- Simplify contextual discovery and fallback behavior
+- Improve runtime activation stability
+- Refine locality expansion and strict range filtering
+- Remove temporary debugging logs
+
 ## [1.8.0] - 2026-05-14
 
 ### Added
@@ -125,7 +147,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release of CodeMark+ extension
 
-[Unreleased]: https://github.com/ManuelGil/vscode-code-mark-plus/compare/v1.8.0...HEAD
+[Unreleased]: https://github.com/ManuelGil/vscode-code-mark-plus/compare/v1.9.0...HEAD
+[1.9.0]: https://github.com/ManuelGil/vscode-code-mark-plus/compare/v1.8.0...v1.9.0
 [1.8.0]: https://github.com/ManuelGil/vscode-code-mark-plus/compare/v1.7.0...v1.8.0
 [1.7.0]: https://github.com/ManuelGil/vscode-code-mark-plus/compare/v1.6.0...v1.7.0
 [1.6.0]: https://github.com/ManuelGil/vscode-code-mark-plus/compare/v1.5.0...v1.6.0

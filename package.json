@@ -596,6 +596,11 @@
 				"command": "codeMarkPlus.openTodoFile",
 				"title": "%codeMarkPlus.openTodoFile.title%",
 				"category": "CodeMark+"
+			},
+			{
+				"command": "codeMarkPlus.openAddress",
+				"title": "%codeMarkPlus.openAddress.title%",
+				"category": "CodeMark+"
 			}
 		],
 		"menus": {
@@ -609,6 +614,11 @@
 					"command": "codeMarkPlus.replaceAnnotationTagInSelection",
 					"when": "editorTextFocus && editorHasSelection",
 					"group": "navigation@11"
+				},
+				{
+					"command": "codeMarkPlus.openAddress",
+					"when": "editorTextFocus",
+					"group": "navigation@14"
 				},
 				{
 					"command": "codeMarkPlus.replaceAnnotationTagInFile",
@@ -637,6 +647,10 @@
 				{
 					"command": "codeMarkPlus.tagBrowserView.openFile",
 					"when": "false"
+				},
+				{
+					"command": "codeMarkPlus.openAddress",
+					"when": "true"
 				}
 			],
 			"view/item/context": [
@@ -707,6 +721,7 @@
 		"check": "biome check .",
 		"check:fix": "biome check --write --unsafe .",
 		"test": "vscode-test",
+		"test:unit": "mocha -r ts-node/register src/**/*.test.ts",
 		"l10n:check": "node scripts/check-l10n.js",
 		"nls:check": "node scripts/check-nls.js",
 		"prepare": "husky"
@@ -722,6 +737,7 @@
 		"@vscode/l10n-dev": "^0.0.35",
 		"@vscode/test-cli": "^0.0.12",
 		"@vscode/test-electron": "^2.5.2",
+		"ts-node": "^10.9.1",
 		"esbuild": "^0.28.0",
 		"husky": "^9.1.7",
 		"lint-staged": "^16.4.0",
@@ -734,7 +750,7 @@
 		"fast-glob": "^3.3.3",
 		"ignore": "^7.0.5",
 		"mustache": "^4.2.0",
-		"vscode-marketplace-client": "^1.2.2"
+		"vscode-marketplace-client": "^1.2.3"
 	},
 	"pnpm": {
 		"overrides": {

@@ -1,3 +1,6 @@
+export * from './address-discovery.helper';
+export * from './address-resolver.helper';
+export * from './annotation.helper';
 export * from './debounce.helper';
 export * from './error-message.helper';
 export * from './find-files.helper';
