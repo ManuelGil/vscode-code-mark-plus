@@ -34,6 +34,7 @@ import { TagBrowserController } from './tag-browser.controller';
  * - src/auth/auth.controller.ts
  * - src/auth/auth.controller.ts#10
  * - src/auth/auth.controller.ts#10:5
+ * - src/auth/auth.controller.ts#10-20
  * - TODO(src/auth/auth.controller.ts)
  *
  * The controller intentionally favors simplicity,
@@ -232,7 +233,7 @@ export class AddressNavigationController {
     }
 
     return window.showInputBox({
-      prompt: 'Enter file address (path[#line[:col]])',
+      prompt: 'Enter file address (path[#line[:hint]] or path#start-end)',
     });
   }
 
@@ -264,7 +265,7 @@ export class AddressNavigationController {
     );
 
     const selected = await window.showQuickPick(items, {
-      placeHolder: 'Multiple matches found — choose one',
+      placeHolder: 'Multiple matches found - choose one',
     });
 
     if (!selected) {

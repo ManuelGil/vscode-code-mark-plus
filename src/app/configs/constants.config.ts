@@ -115,7 +115,7 @@ export const DEFAULT_COMMENT_MESSAGE_WRAPPED_SETTING: boolean = false;
  *
  * @returns {string} - The default value for the comment prefix
  */
-export const DEFAULT_COMMENT_MESSAGE_PREFIX: string = '🔹';
+export const DEFAULT_COMMENT_MESSAGE_PREFIX: string = '';
 
 /**
  * DEFAULT_MESSAGE_COMMENT_DELIMITER: The default value for the message comment delimiter.
@@ -247,7 +247,7 @@ export const DEFAULT_LICENSE_SETTING: string = 'MIT';
  *
  * @returns {boolean} - The default value for the highlight active setting
  */
-export const DEFAULT_HIGHLIGHT_ACTIVE_SETTING: boolean = false;
+export const DEFAULT_HIGHLIGHT_ACTIVE_SETTING: boolean = true;
 
 /**
  * DEFAULT_HIGHLIGHT_RULES: The default value for the highlight rules setting.
@@ -260,14 +260,40 @@ export const DEFAULT_HIGHLIGHT_ACTIVE_SETTING: boolean = false;
  * @returns {HighlightRule[]} - The default value for the highlight rules setting
  */
 export const DEFAULT_HIGHLIGHT_RULES: HighlightRule[] = [
-  { 'keyword': 'TODO', 'color': 'rgba(255,204,0,0.3)', 'bold': true },
   {
-    'keyword': 'FIXME',
-    'color': 'rgba(255,0,0,0.3)',
-    'bold': true,
-    'underline': true,
+    keyword: 'TODO',
+    color: 'rgba(255, 196, 0, 0.16)',
   },
-  { 'keyword': 'NOTE', 'color': 'rgba(0,255,0,0.3)', 'italic': true },
+
+  {
+    keyword: 'FIXME',
+    color: 'rgba(255, 120, 80, 0.18)',
+    bold: true,
+  },
+
+  {
+    keyword: 'BUG',
+    color: 'rgba(220, 38, 38, 0.22)',
+    bold: true,
+    underline: true,
+  },
+
+  {
+    keyword: 'HACK',
+    color: 'rgba(255, 140, 0, 0.14)',
+    italic: true,
+  },
+
+  {
+    keyword: 'NOTE',
+    color: 'rgba(96, 165, 250, 0.14)',
+    italic: true,
+  },
+
+  {
+    keyword: 'REVIEW',
+    color: 'rgba(168, 85, 247, 0.14)',
+  },
 ];
 
 /**
@@ -301,7 +327,7 @@ export const DEFAULT_CUSTOM_COMMENT_TEMPLATES: CommentTemplate[] = [];
 /**
  * DEFAULT_INCLUDED_FILE_PATTERNS: Default glob patterns for files to include.
  */
-export const DEFAULT_INCLUDED_FILE_PATTERNS: string[] = ['**/*{js,ts,md}'];
+export const DEFAULT_INCLUDED_FILE_PATTERNS: string[] = ['**/*.{js,ts,md}'];
 
 /**
  * DEFAULT_EXCLUDED_FILE_PATTERNS: Default glob patterns for files to exclude.
@@ -334,9 +360,9 @@ export const DEFAULT_PRESERVE_GITIGNORE_SETTINGS: boolean = true;
 export const DEFAULT_SHOW_FILE_PATH_IN_RESULTS: boolean = true;
 
 /**
- * DEFAULT_NOTES_FOLDER: The default folder name for project notes.
+ * DEFAULT_CONTEXT_FOLDER: The default folder name for workspace context data.
  */
-export const DEFAULT_NOTES_FOLDER: string = '.code-mark';
+export const DEFAULT_CONTEXT_FOLDER: string = '.context';
 
 /**
  * DEFAULT_CREATE_DEFAULT_FILES_SETTING: Whether to create default notes files automatically.
@@ -347,11 +373,6 @@ export const DEFAULT_CREATE_DEFAULT_FILES_SETTING: boolean = false;
  * DEFAULT_TODO_FILE_NAME: Default filename for project TODO list.
  */
 export const DEFAULT_TODO_FILE_NAME: string = 'todo.md';
-
-/**
- * DEFAULT_SCRATCHPAD_FILE_NAME: Default filename for project scratchpad.
- */
-export const DEFAULT_SCRATCHPAD_FILE_NAME: string = 'scratchpad.md';
 
 /**
  * DEFAULT_EXCLUDE_GLOBS: Default glob patterns to exclude from indexing.

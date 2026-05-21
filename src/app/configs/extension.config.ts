@@ -9,7 +9,7 @@ import {
   DEFAULT_COMMENT_MESSAGE_PREFIX,
   DEFAULT_COMMENT_MESSAGE_WRAPPED_SETTING,
   DEFAULT_CONCURRENCY_LIMIT,
-  DEFAULT_CREATE_DEFAULT_FILES_SETTING,
+  DEFAULT_CONTEXT_FOLDER,
   DEFAULT_CUSTOM_COMMENT_TEMPLATES,
   DEFAULT_ENABLE_SETTING,
   DEFAULT_EXCLUDED_FILE_PATTERNS,
@@ -24,14 +24,11 @@ import {
   DEFAULT_MAX_SEARCH_RECURSION_DEPTH,
   DEFAULT_MESSAGE_COMMENT_DELIMITER,
   DEFAULT_MESSAGE_COMMENT_SUFFIX,
-  DEFAULT_NOTES_FOLDER,
   DEFAULT_PRESERVE_GITIGNORE_SETTINGS,
-  DEFAULT_SCRATCHPAD_FILE_NAME,
   DEFAULT_SHOW_FILE_PATH_IN_RESULTS,
   DEFAULT_SPECIAL_HIGHLIGHT_DECORATION,
   DEFAULT_SUPPORTS_HIDDEN_FILES,
   DEFAULT_TAG_PROFILES,
-  DEFAULT_TODO_FILE_NAME,
   DEFAULT_USE_CURRENT_POSITION_SETTING,
   DEFAULT_VERSION_SETTING,
 } from './constants.config';
@@ -133,7 +130,7 @@ export class ExtensionConfig {
    * @memberof ExtensionConfig
    * @example
    * console.log(config.commentMessagePrefix);
-   * @default "🔹"
+   * @default ""
    */
   commentMessagePrefix: string;
 
@@ -357,7 +354,7 @@ export class ExtensionConfig {
   showFilePathInResults: boolean;
 
   // =====================================================================
-  // NOTES AND TODO SETTINGS
+  // CONTEXT SETTINGS
   // =====================================================================
 
   /**
@@ -365,48 +362,20 @@ export class ExtensionConfig {
    */
 
   /**
-   * Default folder name for project notes.
+   * Default folder name for workspace context data.
    * @type {string}
    * @public
    * @memberof ExtensionConfig
    * @example
-   * console.log(config.notesFolder);
-   * @default '.code-mark'
+   * console.log(config.contextFolder);
+   * @default '.context'
+   */
+  contextFolder: string;
+
+  /**
+   * @deprecated Use contextFolder instead.
    */
   notesFolder: string;
-
-  /**
-   * Whether to create default notes files automatically.
-   * @type {boolean}
-   * @public
-   * @memberof ExtensionConfig
-   * @example
-   * console.log(config.createDefaultFiles);
-   * @default true
-   */
-  createDefaultFiles: boolean;
-
-  /**
-   * Default filename for project TODO list.
-   * @type {string}
-   * @public
-   * @memberof ExtensionConfig
-   * @example
-   * console.log(config.todoFileName);
-   * @default 'todo.md'
-   */
-  todoFileName: string;
-
-  /**
-   * Default filename for project scratchpad.
-   * @type {string}
-   * @public
-   * @memberof ExtensionConfig
-   * @example
-   * console.log(config.scratchpadFileName);
-   * @default 'scratchpad.md'
-   */
-  scratchpadFileName: string;
 
   // =====================================================================
   // TAG SETTINGS
@@ -636,29 +605,18 @@ export class ExtensionConfig {
     );
 
     // =====================================================================
-    // NOTES AND TODO SETTINGS
+    // CONTEXT SETTINGS
     // =====================================================================
 
-    // Default folder name for project notes.
-    this.notesFolder = config.get<string>(
-      'notes.notesFolder',
-      DEFAULT_NOTES_FOLDER,
+    // Default folder name for workspace context data.
+    this.contextFolder = config.get<string>(
+      'context.contextFolder',
+      config.get<string>('notes.notesFolder', DEFAULT_CONTEXT_FOLDER),
     );
-    // Whether to create default notes files automatically.
-    this.createDefaultFiles = config.get<boolean>(
-      'notes.createDefaultFiles',
-      DEFAULT_CREATE_DEFAULT_FILES_SETTING,
-    );
-    // Default filename for project TODO list.
-    this.todoFileName = config.get<string>(
-      'notes.todoFileName',
-      DEFAULT_TODO_FILE_NAME,
-    );
-    // Default filename for project scratchpad.
-    this.scratchpadFileName = config.get<string>(
-      'notes.scratchpadFileName',
-      DEFAULT_SCRATCHPAD_FILE_NAME,
-    );
+
+    // Backward-compatible alias for the context folder setting.
+    this.notesFolder = this.contextFolder;
+
     // =====================================================================
     // TAG SETTINGS
     // =====================================================================
@@ -802,20 +760,25 @@ export class ExtensionConfig {
   }
 
   /**
-   * Notes settings getter.
-   * @returns Notes configuration settings
+   * Context settings getter.
+   * @returns Context configuration settings
+   */
+  get context(): {
+    contextFolder: string;
+  } {
+    return {
+      contextFolder: this.contextFolder,
+    };
+  }
+
+  /**
+   * @deprecated Use the context getter instead.
    */
   get notes(): {
     notesFolder: string;
-    createDefaultFiles: boolean;
-    todoFileName: string;
-    scratchpadFileName: string;
   } {
     return {
-      notesFolder: this.notesFolder,
-      createDefaultFiles: this.createDefaultFiles,
-      todoFileName: this.todoFileName,
-      scratchpadFileName: this.scratchpadFileName,
+      notesFolder: this.contextFolder,
     };
   }
 
@@ -1043,32 +1006,17 @@ export class ExtensionConfig {
     );
 
     // =====================================================================
-    // NOTES AND TODO SETTINGS
+    // CONTEXT SETTINGS
     // =====================================================================
 
-    // Default folder name for project notes
-    this.notesFolder = config.get<string>(
-      'notes.notesFolder',
-      this.notesFolder,
+    // Default folder name for workspace context data.
+    this.contextFolder = config.get<string>(
+      'context.contextFolder',
+      config.get<string>('notes.notesFolder', this.contextFolder),
     );
 
-    // Whether to create default notes files automatically
-    this.createDefaultFiles = config.get<boolean>(
-      'notes.createDefaultFiles',
-      this.createDefaultFiles,
-    );
-
-    // Default filename for project TODO list
-    this.todoFileName = config.get<string>(
-      'notes.todoFileName',
-      this.todoFileName,
-    );
-
-    // Default filename for project scratchpad
-    this.scratchpadFileName = config.get<string>(
-      'notes.scratchpadFileName',
-      this.scratchpadFileName,
-    );
+    // Keep the legacy property in sync for backward compatibility.
+    this.notesFolder = this.contextFolder;
 
     // =====================================================================
     // TAG SETTINGS

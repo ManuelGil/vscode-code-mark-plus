@@ -8,7 +8,7 @@ import { getWorkspaceRoot } from './workspace-root.helper';
 
 /**
  * Parsed address components extracted from a reference string.
- * Format: path[#line[:column]] where line and column are 1-based.
+ * Format: path[#line[:hint]] or path#start-end (1-based values).
  */
 export type ParsedAddress =
   | { kind: 'file'; tag?: string; path: string }
@@ -62,12 +62,13 @@ export type AddressResolutionResult =
 
 /**
  * Parse a lightweight address string into components.
- * Format: path[#line[:column]] (1-based line and column)
+ * Format: path[#line[:hint]] or path#start-end (1-based values)
  *
  * Examples:
  * - backend/ws/reconnect.ts
  * - backend/ws/reconnect.ts#20
  * - backend/ws/reconnect.ts#20:5
+ * - backend/ws/reconnect.ts#20-30
  * - TODO(backend/ws/reconnect.ts)
  * - TODO(backend/ws/reconnect.ts#20:5)
  *
@@ -84,7 +85,7 @@ export function parseAddress(address: string): ParsedAddress | undefined {
   const tag = tagMatch?.[1];
   const innerAddress = tagMatch?.[2]?.trim() ?? trimmed;
 
-  // Match `path[#line[:column]]`  (line and column are 1-based in text)
+  // Match `path[#line[:hint]]` (1-based values in text)
   // Explicit line-range: path#start-end (e.g., file.ts#10-20)
   const rangeMatch = /^(.+?)#(\d+)-(\d+)$/.exec(innerAddress);
   if (rangeMatch) {
@@ -109,7 +110,7 @@ export function parseAddress(address: string): ParsedAddress | undefined {
     return parsed;
   }
 
-  // Anchor: path#line or path#line:column
+  // Anchor: path#line or path#line:hint
   const m = /^(.+?)(?:#(\d+)(?::(\d+))?)?$/.exec(innerAddress);
   if (!m) {
     return undefined;
@@ -345,7 +346,10 @@ async function tryBasenameGlob(
 }
 
 /**
- * Convert parsed address line/column (1-based) to editor Range (0-based).
+ * Convert parsed address values (1-based) to editor Range (0-based).
+ *
+ * NOTE: Anchor hints are parsed and preserved but navigation remains
+ * locality-oriented at runtime.
  */
 function buildRangeFromParsed(parsed: ParsedAddress): Range | undefined {
   if (!parsed) {

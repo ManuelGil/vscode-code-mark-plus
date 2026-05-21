@@ -4,488 +4,206 @@
 [![GitHub Repo Stars](https://img.shields.io/github/stars/ManuelGil/vscode-code-mark-plus?style=for-the-badge&logo=github)](https://github.com/ManuelGil/vscode-code-mark-plus)
 [![GitHub License](https://img.shields.io/github/license/ManuelGil/vscode-code-mark-plus?style=for-the-badge&logo=github)](https://github.com/ManuelGil/vscode-code-mark-plus/blob/main/LICENSE)
 
-> Lightweight operational annotations, contextual navigation, and workspace-first developer workflows for Visual Studio Code.
+> Lightweight annotations, contextual navigation, and developer workflows for Visual Studio Code.
 
-CodeMark+ helps developers create, discover, navigate, and preserve operational context directly inside the editor using lightweight annotations and Markdown-native workflows.
+CodeMark+ helps developers keep implementation context visible directly inside the editor using annotations, workspace navigation, contextual links, and Markdown-friendly workflows.
 
-It combines:
+Instead of moving technical context into external systems, CodeMark+ keeps it close to the code.
 
-- developer annotations (`TODO`, `FIXME`, `NOTE`, `HACK`, custom tags)
-- live annotation highlighting
-- workspace-wide annotation navigation
-- contextual navigation between Markdown and source code
-- lightweight operational notes
-- reusable documentation templates
-- annotation-aware workflows
+![Workspace annotation highlighting and navigation in VS Code.](https://raw.githubusercontent.com/ManuelGil/vscode-code-mark-plus/main/images/annotation-browser-and-highlighting.png)
 
-into a cohesive operational context system designed for real-world software development.
+## Why Developers Use CodeMark+
 
-## Why CodeMark+ Exists
-
-Developer annotations already exist naturally in almost every codebase:
+Most projects already contain annotations like:
 
 ```ts
 // TODO: remove legacy auth flow
-// FIXME: race condition during refresh
-// NOTE: keep aligned with API v2
-// HACK: temporary compatibility patch
+// FIXME: websocket reconnect race condition
+// NOTE: aligned with API v2
+// HACK: temporary compatibility layer
 ```
 
-But over time these annotations often become:
+The problem is that these annotations often become:
 
-- scattered
-- invisible
-- difficult to navigate
-- disconnected from implementation context
-- hard to revisit later
-- operationally fragile
+- scattered across files
+- difficult to revisit later
+- disconnected from implementation notes
+- easy to ignore during development
 
-At the same time, lightweight project notes and temporary implementation context often drift away from the code itself.
-
-CodeMark+ exists to make operational context:
-
-- visible
-- navigable
-- lightweight
-- filesystem-native
-- editor-native
-- easy to preserve
-- naturally integrated into development workflows
-
-without turning the workspace into a heavyweight documentation or knowledge-management system.
-
-![CodeMark+ in Action](https://raw.githubusercontent.com/ManuelGil/vscode-code-mark-plus/main/images/vscode-code-mark-plus.gif)
-
-## What CodeMark+ Is
-
-CodeMark+ is a lightweight operational context extension for VS Code.
-
-It provides:
-
-- annotation highlighting
-- workspace-wide annotation discovery
-- contextual navigation between Markdown and code
-- lightweight operational notes
-- annotation-aware workflows
-- customizable documentation templates
-- developer-focused TODO workflows
-
-The extension is designed to complement existing development workflows — not replace:
-
-- formatters
-- language servers
-- issue trackers
-- documentation platforms
-- project management tools
-
-## Core Philosophy
-
-CodeMark+ is intentionally:
-
-- lightweight
-- operational-first
-- filesystem-native
-- markdown-native
-- editor-native
-- deterministic
-- workspace-oriented
-- annotation-centric
-
-It is intentionally **not**:
-
-- a PKM system
-- a semantic graph engine
-- an AI documentation platform
-- a knowledge database
-- a synchronization framework
-- a heavyweight project management system
-
-Annotations should remain:
-
-- fast
-- local
-- useful
-- visible
-- naturally integrated into coding workflows
-
-without becoming ceremonial.
-
-## Operational Context Model
-
-CodeMark+ introduces lightweight contextual addressability between notes and source code.
-
-This allows Markdown notes, annotations, and operational references to navigate directly into the codebase while remaining plain text.
-
-Examples:
-
-```text
-src/auth/auth.controller.ts
-src/auth/auth.controller.ts#10
-src/auth/auth.controller.ts#10:4
-src/auth/auth.controller.ts#10:20
-TODO(src/auth/auth.controller.ts)
-TODO(src/auth/auth.controller.ts#10)
-TODO(src/auth/auth.controller.ts#10:20)
-```
-
-These references remain:
-
-- plain Markdown
-- versionable
-- portable
-- filesystem-native
-- editor-friendly
-
-while gaining contextual navigation directly inside VS Code.
-
-## Contextual Navigation Semantics
-
-CodeMark+ separates:
-
-- anchor navigation
-- explicit range navigation
-
-This distinction keeps contextual discovery deterministic and operationally predictable.
-
-### File Navigation
-
-```text
-src/auth/auth.controller.ts
-```
-
-Navigate directly to the file.
-
-### Contextual Anchor
-
-```text
-src/auth/auth.controller.ts#10
-```
-
-Navigate near line `10` and expand contextual discovery around that location.
-
-### Precise Anchor
-
-```text
-src/auth/auth.controller.ts#10:4
-```
-
-Navigate to a precise line and column anchor.
-
-### Explicit Range
-
-```text
-src/auth/auth.controller.ts#10:20
-```
-
-Navigate using a deterministic line range.
-
-### Scoped Annotation Discovery
-
-```text
-TODO(src/auth/auth.controller.ts)
-```
-
-Discover TODO annotations within the file.
-
-```text
-TODO(src/auth/auth.controller.ts#10)
-```
-
-Discover TODO annotations near the anchor.
-
-```text
-TODO(src/auth/auth.controller.ts#10:20)
-```
-
-Discover TODO annotations inside the explicit range.
-
-The same semantics apply to:
-
-- `FIXME(...)`
-- `NOTE(...)`
-- `HACK(...)`
-- custom annotation tags
+CodeMark+ helps turn those annotations into visible, navigable development context without forcing heavyweight workflows or external systems.
 
 ## Core Features
 
-### Annotation Highlighting
+| Feature                     | Description                                                               |
+| --------------------------- | ------------------------------------------------------------------------- |
+| Annotation Highlighting     | Highlight TODO, FIXME, NOTE, HACK, and custom tags directly in the editor |
+| Workspace Tag Browser       | Navigate annotations across the workspace                                 |
+| Contextual Navigation       | Open files, anchors, and ranges directly from Markdown or plaintext       |
+| Markdown Navigation         | Navigate between notes and source code                                    |
+| Highlight Directives        | Highlight lines, ranges, or blocks using inline directives                |
+| Comment Templates           | Generate reusable annotation or documentation structures                  |
+| Annotation Cleanup          | Remove annotation comments safely                                         |
+| Multi-Language Support      | Supports multiple programming languages                                   |
+| Filesystem-Native Workflows | References and notes remain local and versionable                         |
 
-CodeMark+ highlights operational annotations directly inside the editor.
+## Annotation Highlighting
 
-Examples:
+CodeMark+ highlights annotations directly inside the editor while you work.
 
 ```ts
-// TODO: refactor auth middleware
-// FIXME: duplicate websocket subscription
-// NOTE: remove after API v3 migration
+// TODO: refactor retry strategy
+// FIXME: websocket reconnect race condition
+// NOTE: remove after migration
+// HACK: temporary compatibility patch
 ```
+
+Highlights update dynamically as files change and can be customized using flexible highlight rules.
 
 Supported workflows include:
 
-- TODO tracking
-- FIXME visibility
-- operational warnings
+- technical debt tracking
 - migration reminders
+- debugging sessions
+- review flows
 - temporary implementation notes
-- custom tags
+- custom annotation systems
 
-Annotations remain visible while coding, reducing the chance of losing important implementation context.
+## Workspace Tag Browser
 
-### Workspace Tag Browser
-
-The Tag Browser provides a workspace-wide operational view of annotations grouped by tag.
+The Tag Browser provides a workspace-wide view of annotations grouped by tag.
 
 Example:
 
 ```text
 TODO
  ├── auth.service.ts
- │    └── refactor auth middleware
+ │    └── remove retry duplication
  │
  └── cache.manager.ts
-      └── optimize invalidation strategy
+      └── optimize invalidation flow
 
 FIXME
  └── websocket.ts
-      └── duplicate websocket subscription
+      └── reconnect race condition
 ```
 
-This makes it easier to:
+The browser supports:
 
-- revisit technical debt
-- surface operational warnings
-- coordinate lightweight workflows
-- navigate temporary decisions
-- preserve implementation continuity
+- click-to-open navigation
+- grouped annotation visibility
+- technical debt discovery
+- implementation tracking
+- lightweight workspace coordination
 
-without requiring external tooling.
+## Contextual Navigation
 
-### Contextual Navigation
+![Contextual navigation between Markdown notes and source code.](https://raw.githubusercontent.com/ManuelGil/vscode-code-mark-plus/main/images/markdown-contextual-navigation.png)
 
-CodeMark+ supports editor-native contextual navigation directly from:
+CodeMark+ supports navigation between Markdown and source code using plain-text references.
 
-- Markdown
-- plaintext documents
-- operational notes
-- task lists
-- annotation references
-- frontmatter references
+References remain portable, versionable, and editor-friendly.
 
-Supported examples:
+### Supported References
+
+#### File References
+
+```text
+src/auth/auth.service.ts
+```
+
+#### Line Anchors
+
+```text
+src/auth/auth.service.ts#20
+```
+
+#### Precise Anchors
+
+```text
+src/auth/auth.service.ts#20:4
+```
+
+#### Explicit Ranges
+
+```text
+src/auth/auth.service.ts#20-40
+```
+
+#### Annotation References
+
+```text
+TODO(src/auth/auth.service.ts)
+FIXME(src/auth/auth.service.ts#20)
+NOTE(src/auth/auth.service.ts#20-40)
+```
+
+CodeMark+ can also discover annotations near referenced files or ranges, making it easier to reconnect notes with implementation details.
+
+## Markdown Navigation
+
+CodeMark+ allows Markdown notes and operational documents to reference implementation context directly.
 
 ```md
+### Websocket Migration
+
 See:
-src/auth/auth.controller.ts#10
+backend/ws/reconnect.ts#20
+
+TODO(backend/ws/reconnect.ts#20-40)
 ```
 
-```md
-- [ ] TODO(src/auth/auth.controller.ts#10:20)
-```
+Supported sources include:
 
-```yaml
----
-references:
-  - src/auth/auth.controller.ts#10
-  - TODO(src/auth/auth.controller.ts)
----
-```
+- Markdown documents
+- plaintext files
+- task lists
+- frontmatter references
+- investigation notes
+- implementation notes
 
-References become navigable using:
+Navigation works using:
 
 - Ctrl+Click
 - command links
 - editor-native navigation behavior
 
-The system also supports:
+References remain navigable even as files evolve over time.
 
-- contextual annotation discovery
-- graceful fallback navigation
-- workspace-first resolution
-- lightweight contextual locality expansion
+## Highlight Directives
 
-without introducing semantic indexing or graph infrastructure.
-
-### Lightweight Workspace Notes
-
-CodeMark+ supports lightweight Markdown-based operational notes.
-
-Examples include:
-
-- migration notes
-- implementation reminders
-- temporary investigation logs
-- scratchpads
-- lightweight TODO tracking
-- operational coordination
-
-The notes remain:
-
-- plain Markdown
-- filesystem-native
-- versionable
-- portable
-- editor-friendly
-
-while gaining contextual navigation into the codebase.
-
-### Customizable Annotation Templates
-
-CodeMark+ includes reusable Mustache-based templates for generating structured comments and documentation blocks.
-
-Templates support:
-
-- multiple programming languages
-- reusable structures
-- configurable formatting
-- wrapping behaviors
-- team conventions
+CodeMark+ supports inline highlight directives for visually emphasizing nearby code.
 
 Example:
 
-```json
-{
-  "language": "typescript",
-  "template": [
-    "/**",
-    " * {{functionName}}",
-    " *",
-    " * @description {{description}}",
-    " * @returns {{returnType}}",
-    " */"
-  ]
-}
-```
-
-Generated output:
-
 ```ts
-/**
- * fetchUserProfile
- *
- * @description Retrieves the active user profile
- * @returns Promise<UserProfile>
- */
+// HIGHLIGHT: next line
+reconnectWebsocket();
 ```
 
-The goal is to reduce repetitive documentation work while preserving developer control over formatting and style.
+Supported directives include:
 
-## Example Workflows
+| Directive       | Behavior                    |
+| --------------- | --------------------------- |
+| `next line`     | Highlight the next line     |
+| `previous line` | Highlight the previous line |
+| `current line`  | Highlight the current line  |
+| `line 10`       | Highlight a specific line   |
+| `range 5-10`    | Highlight a line range      |
+| `block`         | Highlight an entire block   |
 
-### Track Technical Debt
+These directives are useful for:
 
-```ts
-// TODO: remove legacy auth adapter
-// FIXME: retry loop can duplicate requests
-```
+- debugging sessions
+- code walkthroughs
+- onboarding
+- temporary reviews
+- implementation visibility
 
-Use highlighting and the Tag Browser to keep operational debt visible while coding.
+## Comment & Annotation Templates
 
-### Preserve Operational Context
+CodeMark+ supports reusable Mustache-based templates for generating annotations and documentation blocks.
 
-```md
-## Websocket Migration
-
-See:
-backend/ws/reconnect.ts#10
-
-TODO(backend/ws/reconnect.ts#10:20)
-```
-
-Navigate directly from notes into implementation context.
-
-### Lightweight Investigation Notes
-
-```md
-## Refresh Token Investigation
-
-FIXME(src/auth/auth.controller.ts#40)
-
-Possible duplicate refresh flow during reconnect.
-```
-
-Keep temporary operational context close to the codebase.
-
-### Generate Consistent Documentation
-
-Use reusable templates to generate structured comments across projects and languages.
-
-Especially useful for:
-
-- service layers
-- repetitive APIs
-- large codebases
-- shared conventions
-- public SDKs
-
-## Screenshots
-
-> Replace placeholders with updated screenshots focused on operational workflows.
-
-### Annotation Highlighting
-
-*Highlighted TODO/FIXME/NOTE annotations directly inside the editor.*
-
-### Workspace Tag Browser
-
-*Workspace-wide annotation navigation grouped by tag.*
-
-### Contextual Navigation
-
-*Markdown references navigating directly into source code using Ctrl+Click.*
-
-### Workspace Notes
-
-*Operational Markdown notes integrated with contextual navigation.*
-
-### Documentation Templates
-
-*Reusable annotation and documentation templates generated directly in the editor.*
-
-## Configuration
-
-CodeMark+ is intentionally configurable.
-
-The extension supports:
-
-- custom annotation tags
-- highlight rules
-- template generation
-- wrapping behavior
-- Tag Browser behavior
-- operational workflows
-- language-specific templates
-
-without forcing a rigid workflow model.
-
-## Highlight Rules
-
-Highlighting behavior can be customized using annotation rules.
-
-Example:
-
-```json
-"codeMarkPlus.highlight.highlightRules": [
-  {
-    "tag": "TODO",
-    "color": "#FFCC00",
-    "fontWeight": "bold"
-  },
-  {
-    "tag": "FIXME",
-    "color": "#FF5555"
-  },
-  {
-    "tag": "NOTE",
-    "color": "#4FC1FF"
-  }
-]
-```
-
-This allows teams to create consistent operational visibility directly inside the editor.
-
-## Annotation Templates
-
-Templates can be customized per language using Mustache placeholders.
+Templates are customizable per language and workflow.
 
 Example:
 
@@ -504,96 +222,60 @@ Example:
 ]
 ```
 
-Templates support:
+Generated output:
 
-- reusable documentation structures
-- language-specific formatting
-- configurable wrapping behavior
-- custom annotation styles
+```ts
+/**
+ * fetchUserProfile
+ *
+ * @description Retrieves the active user profile
+ */
+```
 
-## Storage Philosophy
+Templates can be used for:
 
-Workspace notes and operational references remain intentionally lightweight and developer-owned.
+- reusable comments
+- structured documentation
+- shared team conventions
+- lightweight annotation workflows
+- service documentation
 
-The goal is to keep operational context:
+## Annotation Cleanup
 
-- visible
-- portable
-- versionable
-- easy to share
-- close to the codebase
-- naturally navigable
+CodeMark+ includes cleanup utilities for removing annotation comments safely.
 
-without introducing heavyweight external systems.
+Supported cleanup scopes include:
 
-## Performance
+| Scope               | Description                              |
+| ------------------- | ---------------------------------------- |
+| All Comments        | Remove all detected single-line comments |
+| Annotation Comments | Remove annotation comments only          |
+| Specific Tags       | Remove comments matching specific tags   |
 
-CodeMark+ is designed to remain lightweight during everyday development workflows.
+Example workflows:
 
-The extension focuses on:
+```text
+Remove all TODO annotations
+Remove all FIXME annotations
+Clean temporary review comments
+```
 
-- fast annotation discovery
-- responsive highlighting
-- lightweight contextual navigation
-- bounded workspace scanning
-- deterministic behavior
-- minimal workflow interruption
+Cleanup operations remain language-aware and respect each language's comment syntax.
 
-while avoiding unnecessary architectural complexity.
+## Configuration
 
-## Design Philosophy
+CodeMark+ is intentionally configurable while remaining lightweight by default.
 
-CodeMark+ prioritizes:
+The extension supports:
 
-- operational annotations
-- contextual continuity
-- filesystem-native workflows
-- lightweight workspace memory
-- editor-native navigation
-- deterministic operational behavior
-- annotation discoverability
-
-The extension intentionally avoids becoming:
-
-- a semantic graph engine
-- a PKM platform
-- an AI orchestration system
-- a contextual database
-- a synchronization framework
-- a heavyweight documentation platform
-
-The focus remains on preserving lightweight operational continuity directly inside the editor.
-
-## Best Use Cases
-
-CodeMark+ works especially well for:
-
-- TODO/FIXME workflows
-- lightweight technical debt tracking
-- operational implementation notes
-- contextual navigation between notes and code
-- migration workflows
-- temporary investigation tracking
-- large codebases with scattered annotations
-- annotation-driven operational workflows
-- developer-focused workspace documentation
-
-## Requirements
-
-- Visual Studio Code ^1.102.0
-
-## Extension Settings
-
-CodeMark+ includes configurable settings for:
-
-- annotation highlighting
-- contextual navigation
-- template generation
-- wrapping behavior
-- Tag Browser behavior
-- Markdown workspace notes
-- formatting preferences
-- language-specific templates
+- custom annotation tags
+- custom highlight rules
+- contextual navigation behavior
+- annotation templates
+- Tag Browser workflows
+- cleanup operations
+- Markdown navigation
+- multi-language behavior
 
 Open:
 
@@ -601,7 +283,213 @@ Open:
 Preferences → Settings → CodeMark+
 ```
 
-to explore available configuration options.
+to explore available settings.
+
+## Highlight Rules
+
+Highlight behavior can be customized using annotation rules.
+
+Example:
+
+```json
+"codeMarkPlus.highlight.highlightRules": [
+  {
+    "tag": "TODO",
+    "color": "#FFCC00",
+    "fontWeight": "bold"
+  },
+  {
+    "tag": "FIXME",
+    "color": "#FF5555",
+    "underline": true
+  },
+  {
+    "tag": "NOTE",
+    "color": "#4FC1FF",
+    "italic": true
+  }
+]
+```
+
+Supported capabilities include:
+
+- keyword matching
+- regex matching
+- substring matching
+- per-language scoping
+- priorities
+- decoration styling
+- overlap resolution
+
+## Special Highlight Decorations
+
+Highlight directive decorations can also be customized.
+
+Example:
+
+```json
+"codeMarkPlus.highlight.specialHighlightDecoration": {
+  "backgroundColor": "rgba(0,128,255,0.3)",
+  "border": "1px solid blue",
+  "isWholeLine": true
+}
+```
+
+This allows teams to create visual annotation systems adapted to their workflows.
+
+## Commands
+
+| Command                                 | Description                                  |
+| --------------------------------------- | -------------------------------------------- |
+| `codeMarkPlus.insertComment`            | Insert annotation or template comment        |
+| `codeMarkPlus.removeSingleLineComments` | Remove annotation comments                   |
+| `codeMarkPlus.replaceAnnotationTag`     | Replace annotation tags in selection or file |
+| `codeMarkPlus.openAddress`              | Open contextual file references              |
+| `codeMarkPlus.tags.refresh`             | Refresh Tag Browser indexing                 |
+
+Example workflows:
+
+```text
+Insert TODO annotation
+Replace NOTE → FIXME
+Navigate to src/auth/auth.service.ts#20
+Refresh workspace annotations
+```
+
+## Multi-Language Support
+
+CodeMark+ supports annotation workflows across multiple languages.
+
+Examples include:
+
+- JavaScript
+- TypeScript
+- Python
+- Java
+- PHP
+- Dart
+- Go
+- Ruby
+- C#
+- C++
+- additional languages supported through configurable comment parsing
+
+Language-aware behavior includes:
+
+- comment syntax detection
+- annotation extraction
+- cleanup operations
+- template generation
+- contextual parsing
+
+## Performance
+
+CodeMark+ is designed to remain lightweight during normal development workflows.
+
+The extension focuses on:
+
+- responsive highlighting
+- bounded workspace scanning
+- lightweight indexing
+- deterministic behavior
+- minimal workflow interruption
+
+The runtime includes:
+
+- file size limits
+- lazy initialization
+- caching strategies
+- bounded indexing
+- concurrency control
+
+to avoid slowing down the editor during large workspace operations.
+
+## Typical Workflows
+
+### Technical Debt Tracking
+
+```ts
+// TODO: remove deprecated auth adapter
+// FIXME: retry flow duplicates requests
+```
+
+Use highlighting and the Tag Browser to keep debt visible while coding.
+
+### Migration Tracking
+
+```md
+### API Migration
+
+backend/ws/reconnect.ts#20-40
+
+TODO(backend/ws/reconnect.ts#20-40)
+```
+
+Navigate directly between notes and implementation ranges.
+
+### Temporary Debugging Sessions
+
+```ts
+// HIGHLIGHT: block
+if (shouldReconnect) {
+  reconnectWebsocket();
+}
+```
+
+Use temporary visual emphasis during investigations or reviews.
+
+### Shared Documentation Conventions
+
+Use templates to standardize lightweight documentation across teams and repositories.
+
+Especially useful for:
+
+- APIs
+- services
+- SDKs
+- reusable modules
+- large codebases
+
+## Troubleshooting
+
+If highlighting or navigation is not working as expected:
+
+| Check                | Description                               |
+| -------------------- | ----------------------------------------- |
+| Highlighting Enabled | Ensure annotation highlighting is enabled |
+| Reload VS Code       | Use `Developer: Reload Window`            |
+| Output Logs          | Check `Log (Extension Host)`              |
+| Workspace References | Verify referenced paths exist             |
+| Highlight Rules      | Ensure tags match configured rules        |
+
+You can also test behavior using a small file with known annotations and references.
+
+## Design Principles
+
+CodeMark+ is designed around a few core ideas:
+
+- annotations should stay lightweight
+- references should remain plain text
+- workflows should remain editor-native
+- files should remain portable and versionable
+- navigation should be deterministic
+- integrations should remain optional
+
+The extension intentionally avoids becoming:
+
+- a knowledge graph
+- a PKM platform
+- an AI orchestration system
+- a centralized documentation engine
+- a mandatory synchronization framework
+
+The goal is simple:
+
+> Keep implementation context visible, navigable, and close to the code.
+
+## Requirements
+
+- Visual Studio Code `^1.102.0`
 
 ## Contributing
 

@@ -66,7 +66,7 @@
 		},
 		"codeMarkPlus.commentMessagePrefix": {
 			"type": "string",
-			"default": "🔹",
+			"default": "",
 			"scope": "resource",
 			"description": "Prefix added at the beginning of the comment message."
 		},
@@ -126,7 +126,7 @@
 		},
 		"codeMarkPlus.highlightActive": {
 			"type": "boolean",
-			"default": false,
+			"default": true,
 			"scope": "resource",
 			"description": "Enable dynamic highlighting while the editor is active."
 		},
@@ -200,19 +200,32 @@
 			"default": [
 				{
 					"keyword": "TODO",
-					"color": "rgba(255,204,0,0.3)",
-					"bold": true
+					"color": "rgba(255, 196, 0, 0.16)"
 				},
 				{
 					"keyword": "FIXME",
-					"color": "rgba(255,0,0,0.3)",
+					"color": "rgba(255, 120, 80, 0.18)",
+					"bold": true
+				},
+				{
+					"keyword": "BUG",
+					"color": "rgba(220, 38, 38, 0.22)",
 					"bold": true,
 					"underline": true
 				},
 				{
-					"keyword": "NOTE",
-					"color": "rgba(0,255,0,0.3)",
+					"keyword": "HACK",
+					"color": "rgba(255, 140, 0, 0.14)",
 					"italic": true
+				},
+				{
+					"keyword": "NOTE",
+					"color": "rgba(96, 165, 250, 0.14)",
+					"italic": true
+				},
+				{
+					"keyword": "REVIEW",
+					"color": "rgba(168, 85, 247, 0.14)"
 				}
 			],
 			"scope": "resource",
@@ -378,29 +391,11 @@
 				"required": ["priority"]
 			}
 		},
-		"codeMarkPlus.notes.notesFolder": {
+		"codeMarkPlus.context.contextFolder": {
 			"type": "string",
-			"default": ".code-mark",
+			"default": ".context",
 			"scope": "resource",
-			"description": "Folder (relative to the workspace) where CodeMark+ stores notes and generated files."
-		},
-		"codeMarkPlus.notes.createDefaultFiles": {
-			"type": "boolean",
-			"default": false,
-			"scope": "resource",
-			"description": "Create default note files (TODO and Scratchpad) inside the notes folder."
-		},
-		"codeMarkPlus.notes.todoFileName": {
-			"type": "string",
-			"default": "todo.md",
-			"scope": "resource",
-			"description": "File name for the default TODO notes file."
-		},
-		"codeMarkPlus.notes.scratchpadFileName": {
-			"type": "string",
-			"default": "scratchpad.md",
-			"scope": "resource",
-			"description": "File name for the default Scratchpad notes file."
+			"description": "Folder (relative to the workspace) where CodeMark+ stores contextual runtime files."
 		},
 		"codeMarkPlus.features.quickActions": {
 			"type": "array",

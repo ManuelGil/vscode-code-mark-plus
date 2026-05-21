@@ -28,3 +28,31 @@ export async function selectAnnotation(
   // can distinguish cancellation from "no annotations found".
   return selected ? (selected as any).comment : null;
 }
+
+/**
+ * Small helper utilities for local, non-authoritative annotation regex building.
+ * These helpers are intentionally tiny and do not introduce any semantic
+ * ownership - they merely encapsulate common, local behavior used by providers.
+ */
+export function escapeAnnotationKeyword(s: string): string {
+  return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+export function getFallbackAnnotationKeywords(): string[] {
+  return ['TODO', 'FIXME', 'BUG', 'REVIEW', 'NOTE', 'HACK', 'DEPRECATED'];
+}
+
+/**
+ * Build a lightweight tag-style annotation regex.
+ * Example matched text: TODO(path), FIXME(src/file.ts#10)
+ *
+ * @param keywords - list of keyword strings to include; if empty, fallback keywords are used.
+ */
+export function buildAnnotationTagRegex(keywords?: string[]): RegExp {
+  const kws =
+    Array.isArray(keywords) && keywords.length > 0
+      ? keywords
+      : getFallbackAnnotationKeywords();
+  const group = kws.map(escapeAnnotationKeyword).join('|');
+  return new RegExp(`\\b(${group})\\(([^)]+)\\):?`, 'g');
+}

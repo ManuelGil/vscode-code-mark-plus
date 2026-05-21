@@ -7,6 +7,8 @@ import {
   Uri,
 } from 'vscode';
 
+import { buildAnnotationTagRegex } from '../helpers';
+
 /**
  * Detected address reference within document text.
  * Positions use byte offsets into document (0-based).
@@ -21,9 +23,8 @@ interface AddressMatch {
  * DocumentLinkProvider that detects address references in markdown and plaintext documents.
  *
  * Extraction flow (in order):
- * 1. Parse frontmatter YAML for references: list
- * 2. Find tag-style addresses: TODO(path), FIXME(path), NOTE(path), HACK(path)
- * 3. Find inline addresses: path[#line[:col]]
+ * 1. Find tag-style addresses: TODO(path), FIXME(path), NOTE(path), HACK(path)
+ * 2. Find inline addresses: path[#line], path[#start-end], path[#line:hint]
  *
  * Each detected address becomes a DocumentLink pointing to codeMarkPlus.openAddress command.
  *
@@ -34,6 +35,11 @@ interface AddressMatch {
  * This separation ensures the provider remains lightweight, deterministic, and composable.
  */
 export class AddressLinkProvider implements DocumentLinkProvider {
+  private readonly tagKeywords?: string[];
+
+  constructor(tagKeywords?: string[]) {
+    this.tagKeywords = Array.isArray(tagKeywords) ? tagKeywords : undefined;
+  }
   /**
    * Detect all address references in a document.
    * Returns DocumentLinks for each reference.
@@ -44,9 +50,18 @@ export class AddressLinkProvider implements DocumentLinkProvider {
   ): DocumentLink[] {
     const text = document.getText();
 
-    // Deterministic inline and tag patterns are used
-    const TagPattern = /\b(TODO|FIXME|NOTE|HACK)\(([^)]+)\):?/g;
-    const MinimalPattern = /([\w\-./]+\.[\w]+(?:#\d+(?::\d+)?)?)/g;
+    // Deterministic inline and tag patterns are used.
+    // TagPattern is derived locally from provided `tagKeywords` when available
+    // to preserve runtime-driven, distributed authority. If no keywords were
+    // provided, fall back to the legacy hard-coded set for historical
+    // compatibility.
+    const MinimalPattern = /([\w\-./]+\.[\w]+(?:#\d+(?:-\d+|:\d+)?)?)/g;
+
+    const TagPattern = buildAnnotationTagRegex(
+      this.tagKeywords && this.tagKeywords.length > 0
+        ? this.tagKeywords.map((k) => String(k).trim()).filter(Boolean)
+        : undefined,
+    );
 
     const links: DocumentLink[] = [];
     const seen = new Set<string>();
@@ -91,14 +106,6 @@ export class AddressLinkProvider implements DocumentLinkProvider {
 
       addMatch(value, start, start + value.length);
     }
-
-    // special hard-coded test trigger
-    if (text.includes('TEST_LINK')) {
-      const idx = text.indexOf('TEST_LINK');
-      addMatch('TEST_LINK', idx, idx + 'TEST_LINK'.length);
-    }
-
-    const linkTargets = links.map((link) => link.target?.toString());
 
     return links;
   }

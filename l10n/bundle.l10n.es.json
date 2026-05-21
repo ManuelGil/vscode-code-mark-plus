@@ -74,7 +74,7 @@
 	"{0}: Select a workspace folder to use. This folder will be used to load workspace-specific configuration for the extension": "{0}: Selecciona una carpeta de espacio de trabajo. Se usar? para cargar la configuraci?n espec?fica de la extensi?n para ese espacio",
 	"Enter file address (path[#line[:col]])": "Introduce la direcci?n de archivo (ruta[#l?nea[:columna]])",
 	"Invalid address": "Direcci?n inv?lida",
-	"Multiple matches found — choose one": "Se encontraron varias coincidencias — elige una",
+	"Multiple matches found - choose one": "Se encontraron varias coincidencias - elige una",
 	"Unable to resolve address": "No se pudo resolver la direcci?n",
 	"{0} annotations found in range": "{0} anotaciones encontradas en el rango"
 }

@@ -31,18 +31,23 @@ import {
 import {
   AddressNavigationController,
   CommentController,
+  ContextWorkspaceController,
   HighlightController,
   TagBrowserController,
-  TodoController,
 } from './app/controllers';
 import {
   AddressDiscoveryWorkflow,
   debounce,
   showNoWorkspaceFolderError,
 } from './app/helpers';
+import { getNormalizedHighlightRules } from './app/helpers/highlight-rules.helper';
 import { NodeModel } from './app/models';
 import { AddressLinkProvider, TagBrowserProvider } from './app/providers';
-import { CommentService, TagIndexService, TodoService } from './app/services';
+import {
+  CommentService,
+  ContextWorkspaceService,
+  TagIndexService,
+} from './app/services';
 
 /**
  * Main extension runtime orchestration layer.
@@ -112,10 +117,10 @@ export class ExtensionRuntime {
    * Todo domain service.
    *
    * @private
-   * @type {TodoService}
+   * @type {ContextWorkspaceService}
    * @memberof ExtensionRuntime
    */
-  private todoService!: TodoService;
+  private contextWorkspaceService!: ContextWorkspaceService;
 
   /**
    * Workspace tag indexing service.
@@ -143,10 +148,10 @@ export class ExtensionRuntime {
    * Todo operational controller.
    *
    * @private
-   * @type {TodoController}
+   * @type {ContextWorkspaceController}
    * @memberof ExtensionRuntime
    */
-  private todoController!: TodoController;
+  private contextWorkspaceController!: ContextWorkspaceController;
 
   /**
    * Workspace tag browser controller.
@@ -312,7 +317,7 @@ export class ExtensionRuntime {
   private initializeServices(): void {
     this.commentService = new CommentService(this.config);
 
-    this.todoService = new TodoService(this.config);
+    this.contextWorkspaceService = new ContextWorkspaceService(this.config);
 
     // NOTE: TagIndexService depends on TagBrowserController which is created
     // during controller initialization. It will be instantiated after controllers
@@ -337,7 +342,9 @@ export class ExtensionRuntime {
 
     this.commentController = new CommentController(this.commentService);
 
-    this.todoController = new TodoController(this.todoService);
+    this.contextWorkspaceController = new ContextWorkspaceController(
+      this.contextWorkspaceService,
+    );
 
     // Initialize lightweight discovery workflow
     this.addressDiscoveryWorkflow = new AddressDiscoveryWorkflow(
@@ -861,6 +868,19 @@ export class ExtensionRuntime {
       },
     );
 
+    const legacyRefreshDisposable = commands.registerCommand(
+      `${EXTENSION_ID}.tagBrowserView.refreshList`,
+      async () => {
+        if (!this.isExtensionEnabled()) {
+          return;
+        }
+
+        this.tagBrowserProvider.refresh();
+
+        await this.tagIndexService.refreshWorkspace();
+      },
+    );
+
     const openFileDisposable = commands.registerCommand(
       `${EXTENSION_ID}.${CommandIds.OpenTagBrowserFile}`,
       async (fileUri: Uri, lineNumber?: number) => {
@@ -872,22 +892,25 @@ export class ExtensionRuntime {
       },
     );
 
-    this.context.subscriptions.push(refreshDisposable, openFileDisposable);
+    this.context.subscriptions.push(
+      refreshDisposable,
+      legacyRefreshDisposable,
+      openFileDisposable,
+    );
   }
 
   // --------------------------------------------------------------------------
-  // Todo commands
+  // Context note commands
   // --------------------------------------------------------------------------
 
   /**
-   * Registers todo-related commands.
+   * Registers context-note commands.
    *
    * RESPONSIBILITIES:
    * - Todo file append
-   * - Todo file opening
    *
    * Operational behavior belongs to:
-   * - TodoController
+   * - ContextWorkspaceController
    *
    * @private
    * @function registerNoteCommands
@@ -902,18 +925,7 @@ export class ExtensionRuntime {
             return;
           }
 
-          return this.todoController.appendToTodoFile();
-        },
-      },
-
-      {
-        id: CommandIds.OpenTodoFile,
-        handler: () => {
-          if (!this.isExtensionEnabled()) {
-            return;
-          }
-
-          return this.todoController.openTodoFile();
+          return this.contextWorkspaceController.promoteSelectionToContextNote();
         },
       },
     ];
@@ -926,6 +938,19 @@ export class ExtensionRuntime {
 
       this.context.subscriptions.push(disposable);
     }
+
+    const legacyPromoteDisposable = commands.registerCommand(
+      `${EXTENSION_ID}.appendToTodoFile`,
+      () => {
+        if (!this.isExtensionEnabled()) {
+          return;
+        }
+
+        return this.contextWorkspaceController.promoteSelectionToContextNote();
+      },
+    );
+
+    this.context.subscriptions.push(legacyPromoteDisposable);
   }
 
   // --------------------------------------------------------------------------
@@ -965,7 +990,15 @@ export class ExtensionRuntime {
       },
     );
 
-    const provider = new AddressLinkProvider();
+    // Derive tag keywords locally from runtime-configured highlight rules.
+    // This preserves distributed runtime authority while aligning the
+    // provider's behavior with existing configuration.
+    const normalizedRules = getNormalizedHighlightRules(this.config);
+    const tagKeywords = normalizedRules
+      .map((r) => (r as any).keyword)
+      .filter(Boolean) as string[];
+
+    const provider = new AddressLinkProvider(tagKeywords);
 
     const providerDisposable = languages.registerDocumentLinkProvider(
       ['markdown', 'plaintext'],

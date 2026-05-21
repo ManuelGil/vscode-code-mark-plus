@@ -37,7 +37,7 @@
 	"codeMarkPlus.removeSingleLineComments.title": "Clean comments (scope)",
 	"codeMarkPlus.removeAllSingleLineComments.title": "Clean all comments",
 	"codeMarkPlus.changeWorkspace.title": "Change annotation workspace folder",
-	"codeMarkPlus.tagBrowserView.title": "Annotation Hub",
+	"codeMarkPlus.tagBrowserView.title": "Annotation",
 	"codeMarkPlus.tagBrowserView.welcomeMessage": "No annotations indexed yet. Add TODO/FIXME/NOTE tags in code and refresh to browse them here.",
 	"codeMarkPlus.tagBrowserView.refreshList.title": "Refresh annotation index",
 	"codeMarkPlus.tagBrowserView.openFile.title": "Open annotation location",
@@ -54,10 +54,7 @@
 	"codeMarkPlus.performance.maxFilesToIndex.description": "Performance: cap the number of files scanned by the Tag Browser to bound indexing time.",
 	"codeMarkPlus.performance.concurrencyLimit.description": "Maximum number of files processed concurrently during indexing.",
 	"codeMarkPlus.performance.batchSize.description": "Number of files to process per batch before yielding to keep the UI responsive.",
-	"codeMarkPlus.notes.notesFolder.description": "Storage: workspace-relative folder where CodeMark+ creates developer-owned Markdown notes (default: .code-mark). Treated as workspace content, not internal cache.",
-	"codeMarkPlus.notes.createDefaultFiles.description": "Convenience: create default workspace notes (TODO, Scratchpad) inside the notes folder when enabled.",
-	"codeMarkPlus.notes.todoFileName.description": "Storage: filename for the workspace TODO file (developer-owned Markdown).",
-	"codeMarkPlus.notes.scratchpadFileName.description": "Storage: filename for the optional Scratchpad Markdown file in the notes folder.",
+	"codeMarkPlus.context.contextFolder.description": "Storage: workspace-relative folder where CodeMark+ creates contextual runtime data (default: .context). Treated as workspace content, not internal cache.",
 	"codeMarkPlus.features.quickActions.description": "Advanced: user-defined shortcuts/actions that invoke VS Code commands. Useful for small workflow automations; avoid exposing internal implementation details.",
 	"codeMarkPlus.features.quickActions.name.description": "Display name of the quick action.",
 	"codeMarkPlus.features.quickActions.command.description": "VS Code command ID to execute.",
@@ -69,7 +66,8 @@
 	"codeMarkPlus.tags.tagPriorities.priority.description": "Priority used for sorting and resolving conflicts. Higher values indicate more important tags.",
 	"codeMarkPlus.tags.tagPriorities.color.description": "Optional color for this tag (hex like #RRGGBB or rgba()).",
 	"codeMarkPlus.tags.tagPriorities.icon.description": "Optional Codicon name (e.g., $(tag)) or emoji to display for this tag.",
-	"codeMarkPlus.appendToTodoFile.title": "Add note to workspace TODO",
-	"codeMarkPlus.openAddress.title": "Open address / Go to location",
-	"codeMarkPlus.openTodoFile.title": "Open workspace TODO"
+	"codeMarkPlus.tags.refresh.title": "Refresh annotations",
+	"codeMarkPlus.context.promoteSelectionToNote.title": "Promote selection to contextual note",	"codeMarkPlus.openAddress.title": "Open address / Go to location",
+	"codeMarkPlus.appendToTodoFile.title": "Promote selection to contextual note",
+	"codeMarkPlus.notes.notesFolder.description": "Deprecated alias for codeMarkPlus.context.contextFolder."
 }

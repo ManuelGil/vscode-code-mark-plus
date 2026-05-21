@@ -37,7 +37,7 @@
 	"codeMarkPlus.removeSingleLineComments.title": "Limpiar comentarios (scope)",
 	"codeMarkPlus.removeAllSingleLineComments.title": "Limpiar todos los comentarios",
 	"codeMarkPlus.changeWorkspace.title": "Cambiar carpeta de trabajo de anotaciones",
-	"codeMarkPlus.tagBrowserView.title": "Centro de Anotaciones",
+	"codeMarkPlus.tagBrowserView.title": "Anotaciones",
 	"codeMarkPlus.tagBrowserView.welcomeMessage": "Aún no hay anotaciones indexadas. Añade etiquetas TODO/FIXME/NOTE en código y actualiza para verlas aquí.",
 	"codeMarkPlus.tagBrowserView.refreshList.title": "Actualizar índice de anotaciones",
 	"codeMarkPlus.tagBrowserView.openFile.title": "Abrir ubicación de anotación",
@@ -54,10 +54,7 @@
 	"codeMarkPlus.performance.maxFilesToIndex.description": "Rendimiento: límite el número de archivos que puede escanear el Explorador de Etiquetas para acotar el tiempo de indexación.",
 	"codeMarkPlus.performance.concurrencyLimit.description": "Número máximo de archivos procesados en paralelo durante la indexación.",
 	"codeMarkPlus.performance.batchSize.description": "Cantidad de archivos por lote antes de ceder el control para mantener la UI responsiva.",
-	"codeMarkPlus.notes.notesFolder.description": "Almacenamiento: carpeta relativa al espacio de trabajo donde CodeMark+ crea notas Markdown propiedad del desarrollador (por defecto: .code-mark). Tratada como contenido del espacio de trabajo, no como caché interno.",
-	"codeMarkPlus.notes.createDefaultFiles.description": "Comodidad: crear notas predeterminadas del espacio de trabajo (TODO, Scratchpad) dentro de la carpeta de notas cuando esté habilitado.",
-	"codeMarkPlus.notes.todoFileName.description": "Almacenamiento: nombre de archivo para el TODO del espacio de trabajo (Markdown propiedad del desarrollador).",
-	"codeMarkPlus.notes.scratchpadFileName.description": "Almacenamiento: nombre de archivo para el Scratchpad Markdown opcional en la carpeta de notas.",
+	"codeMarkPlus.context.contextFolder.description": "Almacenamiento: carpeta relativa al espacio de trabajo donde CodeMark+ crea datos contextuales de tiempo de ejecución (por defecto: .context). Se trata como contenido del espacio de trabajo, no como caché interno.",
 	"codeMarkPlus.features.quickActions.description": "Avanzado: atajos/acciones definidos por el usuario que invocan comandos de VS Code. Útiles para pequeñas automatizaciones de flujo de trabajo; evite exponer detalles de implementación internos.",
 	"codeMarkPlus.features.quickActions.name.description": "Nombre para mostrar de la acción rápida.",
 	"codeMarkPlus.features.quickActions.command.description": "ID del comando de VS Code a ejecutar.",
@@ -69,7 +66,8 @@
 	"codeMarkPlus.tags.tagPriorities.priority.description": "Prioridad usada para ordenamiento y resolución de conflictos. Valores más altos indican más importancia.",
 	"codeMarkPlus.tags.tagPriorities.color.description": "Color opcional para esta etiqueta (hex como #RRGGBB o rgba()).",
 	"codeMarkPlus.tags.tagPriorities.icon.description": "Nombre de Codicon opcional (p. ej., $(tag)) o emoji a mostrar para esta etiqueta.",
-	"codeMarkPlus.appendToTodoFile.title": "Añadir nota al TODO del workspace",
-	"codeMarkPlus.openAddress.title": "Abrir dirección / Ir a ubicación",
-	"codeMarkPlus.openTodoFile.title": "Abrir TODO del workspace"
+	"codeMarkPlus.tags.refresh.title": "Actualizar anotaciones",
+	"codeMarkPlus.context.promoteSelectionToNote.title": "Promover selección a nota contextual",	"codeMarkPlus.openAddress.title": "Abrir dirección / Ir a ubicación",
+	"codeMarkPlus.appendToTodoFile.title": "Promover selección a nota contextual",
+	"codeMarkPlus.notes.notesFolder.description": "Alias obsoleto de codeMarkPlus.context.contextFolder."
 }

@@ -654,6 +654,8 @@ export class HighlightController {
     const workingText: string = text ?? document.getText();
     const workingLines: string[] = lines ?? workingText.split('\n');
     const directiveRegex = /\/\/\s*HIGHLIGHT:\s*(.+)/i;
+    const blockBeginRegex = /\bHIGHLIGHT-BEGIN\b/i;
+    const blockEndRegex = /\bHIGHLIGHT-END\b/i;
 
     // If ranges are provided, determine which lines to process
     const linesToProcess: Array<{ start: number; end: number }> = [];
@@ -688,6 +690,34 @@ export class HighlightController {
             workingLines,
           );
           specialRanges.push(...ranges);
+        }
+        // Block-level support: detect HIGHLIGHT-BEGIN / HIGHLIGHT-END markers
+        // Only create a block highlight when both begin and end markers are found
+        // within the processed window to keep scanning bounded and performant.
+        if (blockBeginRegex.test(workingLines[i])) {
+          // Find matching end within the current processed range
+          let endIndex = -1;
+          for (
+            let j = i + 1;
+            j <= lineRange.end && j < workingLines.length;
+            j++
+          ) {
+            if (blockEndRegex.test(workingLines[j])) {
+              endIndex = j;
+              break;
+            }
+          }
+          if (endIndex !== -1 && endIndex > i + 0) {
+            const startLine = i + 1;
+            const finishLine = endIndex - 1;
+            if (startLine <= finishLine && startLine >= 0) {
+              const startPos = document.lineAt(startLine).range.start;
+              const endPos = document.lineAt(finishLine).range.end;
+              specialRanges.push({ range: new Range(startPos, endPos) });
+            }
+            // Advance the outer loop to the end marker to avoid nested re-processing
+            i = endIndex;
+          }
         }
       }
     }

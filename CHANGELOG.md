@@ -9,6 +9,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.10.0] - 2026-05-20
+
+### Added
+
+- Add lightweight contextual workspace flows built around `.context/notes`.
+- Add explicit contextual range navigation support using `#start-end` address semantics.
+
+### Changed
+
+- Refine extension positioning around operational annotations and contextual navigation.
+- Consolidate contextual command naming and operational promotion flows.
+- Align workspace configuration naming around `.context` semantics.
+- Simplify contextual note creation and operational capture workflows.
+- Improve consistency across contextual navigation terminology and address semantics.
+
+### Fixed
+
+- Fix inline address detection so complete `file#start-end` references become fully navigable.
+- Fix contextual link parsing inconsistencies for explicit range references.
+
+### Removed
+
+- Remove remaining legacy TODO-oriented note flows and obsolete command aliases.
+- Remove deprecated notes-focused configuration entries and localization remnants.
+
 ## [1.9.0] - 2026-05-19
 
 ### Added
@@ -60,10 +85,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rename the extension to `CodeMark+ - Annotations & Comment Templates` for clearer positioning and improved discoverability
 - Refine extension descriptions, keywords, and annotation terminology across the workspace experience
 - Standardize annotation and TODO terminology across commands, comments, operations, prompts, and localized UI text
-- Rename the default notes directory from `.codemark` to `.code-mark`
-- Standardize default note filenames to `todo.md` and `scratchpad.md`
+- Rename the default context directory from `.codemark` to `.code-mark`
+- Standardize default note filenames to `todo.md`
 - Improve Tag Browser terminology and navigation flow for a more cohesive annotation workflow
-- Enhance the default TODO and Scratchpad templates to provide clearer onboarding and lightweight workspace documentation guidance
+- Enhance the default overview template to provide clearer onboarding and lightweight workspace documentation guidance
 - Improve consistency across prompts, placeholders, notifications, and workflow interactions
 - Update localization resources to align with the new annotation terminology and workflow naming conventions
 
@@ -85,7 +110,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add cancellation token support and per-file operation timeouts to `TagIndexService` scanning to prevent long-running or hanging scans. Early cancellation checks are performed during loops and batching
 - Add `TagIndexService` for scanning and indexing tag occurrences across workspace files
-- Introduce `TodoService` for managing TODO-related operations
+- Introduce `ContextWorkspaceService` for managing TODO-related operations
 - Define `TagData`, `TagProfile`, and `TagIndex` interfaces for structured tag management
 - Establish extension runtime to initialize services and manage command lifecycle
 
@@ -147,7 +172,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release of CodeMark+ extension
 
-[Unreleased]: https://github.com/ManuelGil/vscode-code-mark-plus/compare/v1.9.0...HEAD
+[Unreleased]: https://github.com/ManuelGil/vscode-code-mark-plus/compare/v1.10.0...HEAD
+[1.10.0]: https://github.com/ManuelGil/vscode-code-mark-plus/compare/v1.9.1...v1.10.0
 [1.9.0]: https://github.com/ManuelGil/vscode-code-mark-plus/compare/v1.8.0...v1.9.0
 [1.8.0]: https://github.com/ManuelGil/vscode-code-mark-plus/compare/v1.7.0...v1.8.0
 [1.7.0]: https://github.com/ManuelGil/vscode-code-mark-plus/compare/v1.6.0...v1.7.0

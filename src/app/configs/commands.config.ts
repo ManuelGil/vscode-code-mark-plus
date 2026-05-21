@@ -1,6 +1,6 @@
 export enum CommandIds {
   ChangeWorkspace = 'changeWorkspace',
-  RefreshTagBrowserList = 'tagBrowserView.refreshList',
+  RefreshTagBrowserList = 'tags.refresh',
   OpenTagBrowserFile = 'tagBrowserView.openFile',
   OpenAddress = 'openAddress',
   InsertComment = 'insertComment',
@@ -8,6 +8,5 @@ export enum CommandIds {
   ReplaceAnnotationTagInFile = 'replaceAnnotationTagInFile',
   RemoveSingleLineComments = 'removeSingleLineComments',
   RemoveAllSingleLineComments = 'removeAllSingleLineComments',
-  AppendToTodoFile = 'appendToTodoFile',
-  OpenTodoFile = 'openTodoFile',
+  AppendToTodoFile = 'context.promoteSelectionToNote',
 }

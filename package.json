@@ -1,8 +1,8 @@
 {
 	"name": "vscode-code-mark-plus",
-	"displayName": "CodeMark+ - Annotations & Comment Templates",
-	"description": "Lightweight, developer-focused tools for fast in-code annotations: configurable comment templates, tag highlighting, a Tag Browser, and a workspace TODO file. Designed for quick annotation workflows and reproducible comment generation.",
-	"version": "1.9.0",
+	"displayName": "CodeMark+ - TODOs, Annotations & Navigation",
+	"description": "Highlight TODOs, navigate annotations, explore workspace tags, and connect Markdown notes with code using lightweight contextual references.",
+	"version": "1.10.0",
 	"icon": "icon.png",
 	"license": "MIT",
 	"publisher": "imgildev",
@@ -20,25 +20,28 @@
 		"node": ">=22.15.1"
 	},
 	"categories": [
+		"Programming Languages",
 		"Other"
 	],
 	"keywords": [
-		"annotations",
-		"code-comments",
-		"code-documentation",
-		"code-navigation",
-		"comment-templates",
-		"comments",
-		"developer-notes",
-		"developer-tools",
-		"developer-workflow",
-		"highlighting",
-		"inline-documentation",
-		"mustache",
-		"tag-browser",
-		"todo-highlighting",
 		"todo",
-		"vscode-extension"
+		"fixme",
+		"annotations",
+		"annotation-navigation",
+		"tag-browser",
+		"tag-navigation",
+		"code-navigation",
+		"markdown-links",
+		"markdown-navigation",
+		"code-references",
+		"code-comments",
+		"comment-templates",
+		"highlighting",
+		"technical-debt",
+		"developer-notes",
+		"workspace-tags",
+		"mustache",
+		"vscode"
 	],
 	"homepage": "https://github.com/ManuelGil/vscode-code-mark-plus",
 	"repository": {
@@ -129,7 +132,7 @@
 				},
 				"codeMarkPlus.commentMessagePrefix": {
 					"type": "string",
-					"default": "🔹",
+					"default": "",
 					"scope": "resource",
 					"description": "%codeMarkPlus.commentMessagePrefix.description%"
 				},
@@ -189,7 +192,7 @@
 				},
 				"codeMarkPlus.highlightActive": {
 					"type": "boolean",
-					"default": false,
+					"default": true,
 					"scope": "resource",
 					"description": "%codeMarkPlus.highlightActive.description%"
 				},
@@ -452,29 +455,11 @@
 						]
 					}
 				},
-				"codeMarkPlus.notes.notesFolder": {
+				"codeMarkPlus.context.contextFolder": {
 					"type": "string",
-					"default": ".code-mark",
+					"default": ".context",
 					"scope": "resource",
-					"description": "%codeMarkPlus.notes.notesFolder.description%"
-				},
-				"codeMarkPlus.notes.createDefaultFiles": {
-					"type": "boolean",
-					"default": false,
-					"scope": "resource",
-					"description": "%codeMarkPlus.notes.createDefaultFiles.description%"
-				},
-				"codeMarkPlus.notes.todoFileName": {
-					"type": "string",
-					"default": "todo.md",
-					"scope": "resource",
-					"description": "%codeMarkPlus.notes.todoFileName.description%"
-				},
-				"codeMarkPlus.notes.scratchpadFileName": {
-					"type": "string",
-					"default": "scratchpad.md",
-					"scope": "resource",
-					"description": "%codeMarkPlus.notes.scratchpadFileName.description%"
+					"description": "%codeMarkPlus.context.contextFolder.description%"
 				},
 				"codeMarkPlus.features.quickActions": {
 					"type": "array",
@@ -576,8 +561,8 @@
 				"category": "CodeMark+"
 			},
 			{
-				"command": "codeMarkPlus.tagBrowserView.refreshList",
-				"title": "%codeMarkPlus.tagBrowserView.refreshList.title%",
+				"command": "codeMarkPlus.tags.refresh",
+				"title": "%codeMarkPlus.tags.refresh.title%",
 				"category": "CodeMark+",
 				"icon": "$(refresh)"
 			},
@@ -588,13 +573,8 @@
 				"icon": "$(go-to-file)"
 			},
 			{
-				"command": "codeMarkPlus.appendToTodoFile",
-				"title": "%codeMarkPlus.appendToTodoFile.title%",
-				"category": "CodeMark+"
-			},
-			{
-				"command": "codeMarkPlus.openTodoFile",
-				"title": "%codeMarkPlus.openTodoFile.title%",
+				"command": "codeMarkPlus.context.promoteSelectionToNote",
+				"title": "%codeMarkPlus.context.promoteSelectionToNote.title%",
 				"category": "CodeMark+"
 			},
 			{
@@ -638,7 +618,7 @@
 			],
 			"view/title": [
 				{
-					"command": "codeMarkPlus.tagBrowserView.refreshList",
+					"command": "codeMarkPlus.tags.refresh",
 					"when": "view == codeMarkPlus.tagBrowserView",
 					"group": "navigation@1"
 				}
