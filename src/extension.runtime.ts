@@ -1101,6 +1101,8 @@ export class ExtensionRuntime {
 
     if (!this.highlightController) {
       this.highlightController = new HighlightController(this.config);
+    } else {
+      this.highlightController.refreshConfiguration();
     }
 
     if (this.highlightListeners.length === 0) {
@@ -1122,6 +1124,14 @@ export class ExtensionRuntime {
 
       this.highlightListeners.push(
         window.onDidChangeActiveTextEditor(updateHighlighting),
+
+        window.onDidChangeTextEditorVisibleRanges((event) => {
+          const activeEditor = window.activeTextEditor;
+
+          if (activeEditor && event.textEditor === activeEditor) {
+            debouncedUpdate();
+          }
+        }),
 
         workspace.onDidChangeTextDocument((event) => {
           const activeEditor = window.activeTextEditor;

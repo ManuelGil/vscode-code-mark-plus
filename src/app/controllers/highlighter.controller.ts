@@ -365,10 +365,12 @@ export class HighlightController {
     type: TextEditorDecorationType;
     ranges: DecorationOptions[];
   }> {
-    // Expand visible ranges with buffer for smoother scrolling experience
-    const expandedRanges = ranges
-      ? this.expandRangesWithBuffer(document, ranges)
-      : undefined;
+    // Expand visible ranges with buffer for smoother scrolling experience.
+    // When no visible ranges exist, scan the full document (legacy behavior).
+    const expandedRanges =
+      ranges && ranges.length > 0
+        ? this.expandRangesWithBuffer(document, ranges)
+        : undefined;
 
     const keywordDecorations = this.getKeywordDecorations(
       document,
@@ -633,7 +635,16 @@ export class HighlightController {
 
   /**
    * Retrieves decorations for special highlight directives, optionally limited to specific ranges.
-   * Supports directives like "HIGHLIGHT: next line" or "HIGHLIGHT: range 10-20".
+   *
+   * Explicit semantics (preferred):
+   * - `// HIGHLIGHT: line N`
+   * - `// HIGHLIGHT: range N-M`
+   * - `HIGHLIGHT-BEGIN` / `HIGHLIGHT-END` block markers
+   *
+   * Legacy line-relative semantics (preserved for backward compatibility):
+   * - `// HIGHLIGHT: next line`
+   * - `// HIGHLIGHT: previous line`
+   * - `// HIGHLIGHT: current line`
    *
    * @param document - The document to analyze
    * @param ranges - Optional array of ranges to limit decoration computation
@@ -653,6 +664,7 @@ export class HighlightController {
     const specialRanges: DecorationOptions[] = [];
     const workingText: string = text ?? document.getText();
     const workingLines: string[] = lines ?? workingText.split('\n');
+    // Line directive: `// HIGHLIGHT: <payload>` (payload trimmed before parsing).
     const directiveRegex = /\/\/\s*HIGHLIGHT:\s*(.+)/i;
     const blockBeginRegex = /\bHIGHLIGHT-BEGIN\b/i;
     const blockEndRegex = /\bHIGHLIGHT-END\b/i;
@@ -691,17 +703,14 @@ export class HighlightController {
           );
           specialRanges.push(...ranges);
         }
-        // Block-level support: detect HIGHLIGHT-BEGIN / HIGHLIGHT-END markers
-        // Only create a block highlight when both begin and end markers are found
-        // within the processed window to keep scanning bounded and performant.
+        // Block markers: HIGHLIGHT-BEGIN / HIGHLIGHT-END (explicit block semantics).
+        // Highlight applies to lines strictly between the markers (BEGIN+1 .. END-1).
+        // A matching HIGHLIGHT-END must exist after BEGIN; otherwise no block decoration
+        // is produced for that pair. END is searched forward through workingLines
+        // (document lines available to this pass), not limited to the current lineRange.
         if (blockBeginRegex.test(workingLines[i])) {
-          // Find matching end within the current processed range
           let endIndex = -1;
-          for (
-            let j = i + 1;
-            j <= lineRange.end && j < workingLines.length;
-            j++
-          ) {
+          for (let j = i + 1; j < workingLines.length; j++) {
             if (blockEndRegex.test(workingLines[j])) {
               endIndex = j;
               break;
@@ -728,9 +737,12 @@ export class HighlightController {
   }
 
   /**
-   * Parses special highlight directives and determines the lines to highlight.
-   * Supported directives include "next line", "previous line", "current line",
-   * "line N", and "range N-M".
+   * Parses `// HIGHLIGHT: <payload>` payloads and returns line decorations.
+   *
+   * Explicit semantics (preferred): `line N`, `range N-M`.
+   * Legacy semantics (preserved): `next line`, `previous line`, `current line`.
+   * Matching is case-insensitive on the payload; leading/trailing whitespace is trimmed
+   * by the caller before this method runs.
    *
    * @function parseSpecialDirective
    * @private
@@ -761,6 +773,8 @@ export class HighlightController {
 
     const lowerDirective = directive.toLowerCase();
 
+    // Legacy directive support preserved for backward compatibility.
+    // Prefer explicit directives: HIGHLIGHT: line N, HIGHLIGHT: range N-M.
     if (lowerDirective.startsWith('next line')) {
       addRange(lineIndex + 1);
     } else if (lowerDirective.startsWith('previous line')) {
@@ -768,14 +782,16 @@ export class HighlightController {
     } else if (lowerDirective.startsWith('current line')) {
       addRange(lineIndex);
     } else if (lowerDirective.startsWith('line ')) {
-      const parts = lowerDirective.split(' ');
+      // Explicit line: `line N` (1-based line number in the directive text).
+      const parts = lowerDirective.split(/\s+/);
       const targetLine = parseInt(parts[1], 10) - 1;
       addRange(targetLine);
     } else if (lowerDirective.startsWith('range ')) {
+      // Explicit range: `range N-M` (1-based line numbers in the directive text).
       const rangeParts = lowerDirective
-        .split(' ')[1]
+        .split(/\s+/)[1]
         .split('-')
-        .map((part) => parseInt(part, 10) - 1);
+        .map((part) => parseInt(part.trim(), 10) - 1);
       if (rangeParts.length === 2 && rangeParts[0] <= rangeParts[1]) {
         for (let i = rangeParts[0]; i <= rangeParts[1]; i++) {
           addRange(i);

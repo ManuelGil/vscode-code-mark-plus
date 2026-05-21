@@ -117,12 +117,6 @@ src/auth/auth.service.ts
 src/auth/auth.service.ts#20
 ```
 
-#### Precise Anchors
-
-```text
-src/auth/auth.service.ts#20:4
-```
-
 #### Explicit Ranges
 
 ```text
@@ -176,20 +170,23 @@ CodeMark+ supports inline highlight directives for visually emphasizing nearby c
 Example:
 
 ```ts
-// HIGHLIGHT: next line
+// HIGHLIGHT: line 42
+
+// HIGHLIGHT: range 10-20
+
+// HIGHLIGHT-BEGIN
 reconnectWebsocket();
+syncSubscriptions();
+// HIGHLIGHT-END
 ```
 
 Supported directives include:
 
-| Directive       | Behavior                    |
-| --------------- | --------------------------- |
-| `next line`     | Highlight the next line     |
-| `previous line` | Highlight the previous line |
-| `current line`  | Highlight the current line  |
-| `line 10`       | Highlight a specific line   |
-| `range 5-10`    | Highlight a line range      |
-| `block`         | Highlight an entire block   |
+| Directive                           | Behavior                    |
+| ----------------------------------- | --------------------------- |
+| `line 10`                           | Highlight a specific line   |
+| `range 5-10`                        | Highlight a line range      |
+| `HIGHLIGHT-BEGIN` / `HIGHLIGHT-END` | Highlight an explicit block |
 
 These directives are useful for:
 

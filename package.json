@@ -2,7 +2,7 @@
 	"name": "vscode-code-mark-plus",
 	"displayName": "CodeMark+ - TODOs, Annotations & Navigation",
 	"description": "Highlight TODOs, navigate annotations, explore workspace tags, and connect Markdown notes with code using lightweight contextual references.",
-	"version": "1.10.0",
+	"version": "1.10.1",
 	"icon": "icon.png",
 	"license": "MIT",
 	"publisher": "imgildev",
@@ -51,7 +51,9 @@
 	"bugs": {
 		"url": "https://github.com/ManuelGil/vscode-code-mark-plus/issues"
 	},
-	"activationEvents": [],
+	"activationEvents": [
+		"onStartupFinished"
+	],
 	"main": "./out/extension.js",
 	"l10n": "./l10n",
 	"files": [

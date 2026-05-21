@@ -9,6 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.10.1] - 2026-05-20
+
+### Fixed
+
+- Restore highlight updates while scrolling and navigating editor ranges
+- Prevent `HIGHLIGHT-BEGIN` / `HIGHLIGHT-END` blocks from being truncated by visible range boundaries
+
+### Changed
+
+- Refine `HIGHLIGHT` directive parsing and legacy compatibility behavior
+
 ## [1.10.0] - 2026-05-20
 
 ### Added
@@ -172,7 +183,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release of CodeMark+ extension
 
-[Unreleased]: https://github.com/ManuelGil/vscode-code-mark-plus/compare/v1.10.0...HEAD
+[Unreleased]: https://github.com/ManuelGil/vscode-code-mark-plus/compare/v1.10.1...HEAD
+[1.10.1]: https://github.com/ManuelGil/vscode-code-mark-plus/compare/v1.10.0...v1.10.1
 [1.10.0]: https://github.com/ManuelGil/vscode-code-mark-plus/compare/v1.9.1...v1.10.0
 [1.9.0]: https://github.com/ManuelGil/vscode-code-mark-plus/compare/v1.8.0...v1.9.0
 [1.8.0]: https://github.com/ManuelGil/vscode-code-mark-plus/compare/v1.7.0...v1.8.0
