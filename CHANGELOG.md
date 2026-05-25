@@ -9,6 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.11.0] - 2026-05-24
+
+### Added
+
+- Support `project` frontmatter hints in markdown so navigation can pin to explicit workspace folders.
+
+### Changed
+
+- Preserve contextual project hints during address navigation.
+
+### Fixed
+
+- Scope Tag Browser discovery to the workspace folder selected in settings to avoid cross-root noise.
+- Ensure workspace root resolution prioritizes explicit project hints before ambient workspace state.
+- Prevent dotfile filtering from relying on `workspace.asRelativePath`, keeping remote and local discovery behavior consistent.
+
 ## [1.10.1] - 2026-05-20
 
 ### Fixed
@@ -183,7 +199,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release of CodeMark+ extension
 
-[Unreleased]: https://github.com/ManuelGil/vscode-code-mark-plus/compare/v1.10.1...HEAD
+[Unreleased]: https://github.com/ManuelGil/vscode-code-mark-plus/compare/v1.11.0...HEAD
+[1.11.0]: https://github.com/ManuelGil/vscode-code-mark-plus/compare/v1.10.1...v1.11.0
 [1.10.1]: https://github.com/ManuelGil/vscode-code-mark-plus/compare/v1.10.0...v1.10.1
 [1.10.0]: https://github.com/ManuelGil/vscode-code-mark-plus/compare/v1.9.1...v1.10.0
 [1.9.0]: https://github.com/ManuelGil/vscode-code-mark-plus/compare/v1.8.0...v1.9.0

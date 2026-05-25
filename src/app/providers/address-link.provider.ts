@@ -19,6 +19,60 @@ interface AddressMatch {
   end: number; // Byte offset where address ends
 }
 
+const FRONTMATTER_PATTERN = /^\ufeff?\s*---\s*[\r\n]+([\s\S]*?)[\r\n]+---/;
+
+const extractProjectFrontmatterHint = (text: string): string | undefined => {
+  const match = FRONTMATTER_PATTERN.exec(text);
+
+  if (!match) {
+    return undefined;
+  }
+
+  const frontmatterBody = match[1];
+  const lines = frontmatterBody.split(/\r?\n/);
+
+  for (const rawLine of lines) {
+    const trimmed = rawLine.trim();
+
+    if (!trimmed || trimmed.startsWith('#')) {
+      continue;
+    }
+
+    const separatorIndex = trimmed.indexOf(':');
+
+    if (separatorIndex === -1) {
+      continue;
+    }
+
+    const key = trimmed.slice(0, separatorIndex).trim();
+
+    if (key !== 'project') {
+      continue;
+    }
+
+    const value = trimmed.slice(separatorIndex + 1).trim();
+
+    if (!value) {
+      return undefined;
+    }
+
+    return stripQuotes(value);
+  }
+
+  return undefined;
+};
+
+const stripQuotes = (value: string): string => {
+  if (
+    (value.startsWith('"') && value.endsWith('"')) ||
+    (value.startsWith("'") && value.endsWith("'"))
+  ) {
+    return value.slice(1, -1).trim();
+  }
+
+  return value;
+};
+
 /**
  * DocumentLinkProvider that detects address references in markdown and plaintext documents.
  *
@@ -49,6 +103,7 @@ export class AddressLinkProvider implements DocumentLinkProvider {
     _token: CancellationToken,
   ): DocumentLink[] {
     const text = document.getText();
+    const projectHint = extractProjectFrontmatterHint(text);
 
     // Deterministic inline and tag patterns are used.
     // TagPattern is derived locally from provided `tagKeywords` when available
@@ -76,7 +131,9 @@ export class AddressLinkProvider implements DocumentLinkProvider {
 
       seen.add(key);
       occupiedRanges.push({ start, end });
-      links.push(this.createDocumentLink(document, { value, start, end }));
+      links.push(
+        this.createDocumentLink(document, { value, start, end }, projectHint),
+      );
     };
 
     const isCoveredByTag = (start: number, end: number) =>
@@ -117,13 +174,20 @@ export class AddressLinkProvider implements DocumentLinkProvider {
   private createDocumentLink(
     document: TextDocument,
     match: AddressMatch,
+    projectHint?: string,
   ): DocumentLink {
     const range = new Range(
       document.positionAt(match.start),
       document.positionAt(match.end),
     );
 
-    const payload = JSON.stringify([match.value]);
+    const args: unknown[] = [match.value];
+
+    if (projectHint) {
+      args.push({ project: projectHint });
+    }
+
+    const payload = JSON.stringify(args);
 
     const commandArguments = encodeURIComponent(payload);
 

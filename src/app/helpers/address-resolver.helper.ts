@@ -174,12 +174,13 @@ export function parseAddress(address: string): ParsedAddress | undefined {
 export async function resolveAddressToUriRange(
   parsed: ParsedAddress,
   config: ExtensionConfig,
+  projectHint?: string,
 ): Promise<AddressResolutionResult> {
   if (!parsed || !parsed.path) {
     return { kind: 'unresolved' };
   }
 
-  const workspaceRoot = getWorkspaceRoot(config);
+  const workspaceRoot = getWorkspaceRoot(config, undefined, projectHint);
   if (!workspaceRoot) {
     return { kind: 'unresolved' };
   }
@@ -201,7 +202,6 @@ export async function resolveAddressToUriRange(
   if (result3) {
     return result3;
   }
-
   return { kind: 'unresolved' };
 }
 

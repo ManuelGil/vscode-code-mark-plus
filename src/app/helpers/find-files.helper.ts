@@ -177,10 +177,12 @@ const discoverFilesRemotely = async (
       return true;
     }
 
-    const relativePath = workspace.asRelativePath(candidateUri, false);
-    return !relativePath
-      .split(/[\\\/]/)
-      .some((segment) => segment.startsWith('.'));
+    const candidatePosixPath = toPosixPath(candidateUri.fsPath);
+    const relativePath = candidatePosixPath.startsWith(`${baseDirectoryPosix}/`)
+      ? candidatePosixPath.slice(baseDirectoryPosix.length + 1)
+      : candidatePosixPath;
+
+    return !relativePath.split('/').some((segment) => segment.startsWith('.'));
   };
 
   const passesIgnoreFilter = (candidateUri: Uri) => {
@@ -277,15 +279,8 @@ const discoverFilesLocally = async (
       }
 
       if (!options.includeDotfiles) {
-        const relativePathForDotCheck = workspace.asRelativePath(
-          candidateUri,
-          false,
-        );
-
         if (
-          relativePathForDotCheck
-            .split(/[\\\/]/)
-            .some((segment) => segment.startsWith('.'))
+          relativePath.split('/').some((segment) => segment.startsWith('.'))
         ) {
           continue;
         }

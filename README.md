@@ -123,6 +123,8 @@ src/auth/auth.service.ts#20
 src/auth/auth.service.ts#20-40
 ```
 
+Single line anchors navigate directly to the target line, while ranges can trigger contextual annotation discovery when annotations exist within the selected range.
+
 #### Annotation References
 
 ```text
@@ -162,6 +164,26 @@ Navigation works using:
 - editor-native navigation behavior
 
 References remain navigable even as files evolve over time.
+
+### Multi-Root Workspace Context
+
+When working with multi-root workspaces, Markdown documents can optionally define a project context using frontmatter:
+
+```yaml
+---
+project: backend
+---
+```
+
+This allows contextual references such as:
+
+```text
+src/auth/auth.service.ts#20
+```
+
+to resolve relative to a specific workspace folder without changing the reference format itself.
+
+If no project is specified, CodeMark+ falls back to the currently selected workspace behavior.
 
 ## Highlight Directives
 
@@ -427,10 +449,11 @@ Navigate directly between notes and implementation ranges.
 ### Temporary Debugging Sessions
 
 ```ts
-// HIGHLIGHT: block
+// HIGHLIGHT-BEGIN
 if (shouldReconnect) {
   reconnectWebsocket();
 }
+// HIGHLIGHT-END
 ```
 
 Use temporary visual emphasis during investigations or reviews.

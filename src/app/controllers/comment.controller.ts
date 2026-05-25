@@ -59,14 +59,11 @@ export class CommentController {
    * @public
    * @memberof CommentController
    */
-  constructor(readonly service: CommentService) {
-    console.log('[CodeMark+] CommentController initialized', {
-      hasCommentService: !!service,
-      hasConfig: !!service?.config,
-    });
-  }
+  constructor(readonly service: CommentService) {}
+
   // -----------------------------------------------------------------
   // Public methods
+  // -----------------------------------------------------------------
 
   /**
    * The exportToActiveTextEditor method.

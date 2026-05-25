@@ -77,12 +77,28 @@ export class TagBrowserController {
     let folders: Uri[] = [];
     let files: Uri[] = [];
 
-    if (!workspace.workspaceFolders) {
+    const workspaceFolders = workspace.workspaceFolders;
+
+    if (!workspaceFolders) {
       showNoWorkspaceFolderError(EXTENSION_DISPLAY_NAME);
       return;
     }
 
-    folders = workspace.workspaceFolders.map((folder) => folder.uri);
+    const selectedWorkspacePath = this.config.workspaceSelection;
+
+    if (selectedWorkspacePath) {
+      const matchingFolder = workspaceFolders.find(
+        (folder) => folder.uri.fsPath === selectedWorkspacePath,
+      );
+
+      if (matchingFolder) {
+        folders = [matchingFolder.uri];
+      }
+    }
+
+    if (folders.length === 0) {
+      folders = workspaceFolders.map((folder) => folder.uri);
+    }
 
     const {
       includedFilePatterns,

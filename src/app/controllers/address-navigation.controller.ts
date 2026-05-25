@@ -4,6 +4,7 @@ import { QuickPickItem, Uri, window, workspace } from 'vscode';
 import { ExtensionConfig } from '../configs';
 import {
   AddressDiscoveryWorkflow,
+  ParsedAddress,
   parseAddress,
   resolveAddressToUriRange,
 } from '../helpers';
@@ -60,13 +61,7 @@ export class AddressNavigationController {
     readonly config: ExtensionConfig,
     readonly tagBrowserController: TagBrowserController,
     readonly discoveryWorkflow?: AddressDiscoveryWorkflow,
-  ) {
-    console.log('[CodeMark+] AddressNavigationController initialized', {
-      hasConfig: !!config,
-      hasTagBrowserController: !!tagBrowserController,
-      hasDiscoveryWorkflow: !!discoveryWorkflow,
-    });
-  }
+  ) {}
 
   /**
    * Resolution flow:
@@ -89,6 +84,7 @@ export class AddressNavigationController {
     // command args logged only in production errors
 
     const address = typeof args[0] === 'string' ? args[0] : undefined;
+    const context = this.normalizeCommandContext(args[1]);
 
     const normalizedAddress = await this.resolveAddressInput(address);
 
@@ -110,6 +106,7 @@ export class AddressNavigationController {
     const resolvedAddress = await resolveAddressToUriRange(
       parsedAddress,
       this.config,
+      context?.project,
     );
 
     switch (resolvedAddress.kind) {
@@ -117,86 +114,91 @@ export class AddressNavigationController {
         this.showUnresolvedAddressMessage();
         return;
 
-      case 'resolved':
-        // Attempt optional discovery: range-scoped or file-scoped
-        if (this.discoveryWorkflow) {
-          try {
-            const doc = await workspace.openTextDocument(resolvedAddress.uri);
-            const text = doc.getText();
+      case 'resolved': {
+        const discoveryWorkflow = this.discoveryWorkflow;
+        const shouldDiscover =
+          Boolean(discoveryWorkflow) && this.shouldUseDiscovery(parsedAddress);
+        const fallbackLine = resolvedAddress.range?.start.line ?? 0;
 
-            let discovered;
-
-            if (parsedAddress.tag) {
-              const isExplicit = parsedAddress.kind === 'range';
-              discovered = await this.discoveryWorkflow.discoverByTag(
-                text,
-                parsedAddress.tag,
-                resolvedAddress.range,
-                isExplicit,
-                doc.languageId,
-              );
-            } else if (parsedAddress.kind === 'range') {
-              // Explicit range: strict filtering
-              discovered = await this.discoveryWorkflow.discoverInRange(
-                text,
-                resolvedAddress.range!,
-                true,
-                doc.languageId,
-              );
-            } else if (parsedAddress.kind === 'anchor') {
-              // Anchor: expand locality
-              discovered = await this.discoveryWorkflow.discoverInRange(
-                text,
-                resolvedAddress.range!,
-                false,
-                doc.languageId,
-              );
-            } else {
-              // Otherwise use file-scoped discovery
-              discovered = await this.discoveryWorkflow.discoverInFile(
-                text,
-                doc.languageId,
-              );
-            }
-
-            if (discovered === null) {
-              // User cancelled selection: abort without side effects
-              return;
-            }
-
-            if (discovered) {
-              // Navigate to discovered annotation
-              await this.navigateToResolvedAddress(
-                resolvedAddress.uri,
-                discovered.line - 1,
-              );
-              return;
-            }
-
-            // No annotations: fallback to resolved location
-            await this.navigateToResolvedAddress(
-              resolvedAddress.uri,
-              resolvedAddress.range?.start.line,
-            );
-            return;
-          } catch (error) {
-            console.error('[CodeMark+] Discovery error', error);
-
-            // Fallback to resolved location
-            await this.navigateToResolvedAddress(
-              resolvedAddress.uri,
-              resolvedAddress.range?.start.line,
-            );
-            return;
-          }
-        } else {
-          // No discovery workflow: direct navigation
+        if (!shouldDiscover || !discoveryWorkflow) {
           await this.navigateToResolvedAddress(
             resolvedAddress.uri,
-            resolvedAddress.range?.start.line,
+            fallbackLine,
           );
           return;
         }
+
+        // Attempt optional discovery: range/tag-scoped
+        try {
+          const doc = await workspace.openTextDocument(resolvedAddress.uri);
+          const text = doc.getText();
+
+          let discovered;
+
+          if (parsedAddress.tag) {
+            const isExplicit = parsedAddress.kind === 'range';
+            discovered = await discoveryWorkflow.discoverByTag(
+              text,
+              parsedAddress.tag,
+              resolvedAddress.range,
+              isExplicit,
+              doc.languageId,
+            );
+          } else if (parsedAddress.kind === 'range') {
+            // Explicit range: strict filtering
+            discovered = await discoveryWorkflow.discoverInRange(
+              text,
+              resolvedAddress.range!,
+              true,
+              doc.languageId,
+            );
+          } else if (parsedAddress.kind === 'anchor') {
+            // Anchor + tag: expand locality
+            discovered = await discoveryWorkflow.discoverInRange(
+              text,
+              resolvedAddress.range!,
+              false,
+              doc.languageId,
+            );
+          } else {
+            // File with tag
+            discovered = await discoveryWorkflow.discoverInFile(
+              text,
+              doc.languageId,
+            );
+          }
+
+          if (discovered === null) {
+            // User cancelled selection: abort without side effects
+            return;
+          }
+
+          if (discovered) {
+            // Navigate to discovered annotation
+            await this.navigateToResolvedAddress(
+              resolvedAddress.uri,
+              discovered.line - 1,
+            );
+            return;
+          }
+
+          // No annotations: fallback to resolved location
+          await this.navigateToResolvedAddress(
+            resolvedAddress.uri,
+            fallbackLine,
+          );
+          return;
+        } catch (error) {
+          console.error('[CodeMark+] Discovery error', error);
+
+          // Fallback to resolved location
+          await this.navigateToResolvedAddress(
+            resolvedAddress.uri,
+            fallbackLine,
+          );
+          return;
+        }
+      }
 
       case 'ambiguous':
         await this.handleAmbiguousResolution(
@@ -297,6 +299,45 @@ export class AddressNavigationController {
     await this.tagBrowserController.openFile(uri, lineNumber);
   }
 
+  private shouldUseDiscovery(parsedAddress: ParsedAddress): boolean {
+    if (parsedAddress.tag) {
+      return true;
+    }
+
+    return parsedAddress.kind === 'range';
+  }
+
+  private normalizeCommandContext(
+    input: unknown,
+  ): AddressCommandContext | undefined {
+    if (!input || typeof input !== 'object') {
+      return undefined;
+    }
+
+    const candidate = input as { project?: unknown };
+    const project = this.normalizeProjectHint(candidate.project);
+
+    if (!project) {
+      return undefined;
+    }
+
+    return { project };
+  }
+
+  private normalizeProjectHint(value: unknown): string | undefined {
+    if (typeof value !== 'string') {
+      return undefined;
+    }
+
+    const trimmed = value.trim();
+
+    if (!trimmed) {
+      return undefined;
+    }
+
+    return trimmed;
+  }
+
   /**
    * Show invalid address message.
    *
@@ -318,4 +359,8 @@ export class AddressNavigationController {
   private showUnresolvedAddressMessage(): void {
     window.showErrorMessage('Unable to resolve address');
   }
+}
+
+interface AddressCommandContext {
+  project?: string;
 }

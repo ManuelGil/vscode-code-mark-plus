@@ -981,12 +981,12 @@ export class ExtensionRuntime {
   private registerAddressNavigation(): void {
     const openAddressDisposable = commands.registerCommand(
       `${EXTENSION_ID}.${CommandIds.OpenAddress}`,
-      async (address?: string) => {
+      async (...args: unknown[]) => {
         if (!this.isExtensionEnabled()) {
           return;
         }
 
-        await this.addressNavigationController.openAddress(address);
+        await this.addressNavigationController.openAddress(...args);
       },
     );
 
@@ -1001,7 +1001,7 @@ export class ExtensionRuntime {
     const provider = new AddressLinkProvider(tagKeywords);
 
     const providerDisposable = languages.registerDocumentLinkProvider(
-      ['markdown', 'plaintext'],
+      [{ language: 'markdown' }, { language: 'plaintext' }],
       provider,
     );
 
