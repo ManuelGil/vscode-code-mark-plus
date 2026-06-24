@@ -715,10 +715,10 @@
 		"@commitlint/config-conventional": "^19.8.1",
 		"@types/mocha": "^10.0.10",
 		"@types/mustache": "^4.2.6",
-		"@types/node": "^22.19.21",
+		"@types/node": "^22.20.0",
 		"@types/vscode": "^1.102.0",
 		"@vscode/l10n-dev": "^0.0.35",
-		"@vscode/test-cli": "^0.0.12",
+		"@vscode/test-cli": "^0.0.15",
 		"@vscode/test-electron": "^2.5.2",
 		"esbuild": "^0.28.1",
 		"husky": "^9.1.7",
@@ -738,7 +738,9 @@
 	"pnpm": {
 		"overrides": {
 			"diff@>=6.0.0 <8.0.3": ">=8.0.3",
-			"serialize-javascript@>=5.0.0 <7.0.5": ">=7.0.5"
+			"serialize-javascript@>=5.0.0 <7.0.5": ">=7.0.5",
+			"js-yaml@<=4.1.1": ">=4.2.0",
+			"markdown-it@<=14.1.1": ">=14.2.0"
 		},
 		"onlyBuiltDependencies": [
 			"esbuild"
